@@ -1,2 +1,5 @@
 ﻿  Application.cpp
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\minwindef.h(130,1): warning C4005: 'APIENTRY': macro redefinition
+C:\Users\luigi\Desktop\escape room\escape_room\dependencies\glfw-3.3.7\include\GLFW\glfw3.h(123): message : see previous definition of 'APIENTRY'
+     Creating library C:\Users\luigi\Desktop\escape room\escape_room\bin\x64-Debug\escape_room\escape_room.lib and object C:\Users\luigi\Desktop\escape room\escape_room\bin\x64-Debug\escape_room\escape_room.exp
   escape_room.vcxproj -> C:\Users\luigi\Desktop\escape room\escape_room\bin\x64-Debug\escape_room\escape_room.exe

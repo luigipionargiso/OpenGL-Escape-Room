@@ -4,6 +4,7 @@
 #include <unordered_map>
 
 #include "vendor/glm/glm.hpp"
+#include "vendor/glm/gtc/type_ptr.hpp"
 
 class Shader
 {
@@ -20,7 +21,7 @@ public:
 	void setUniform1i(const std::string& name, int value);
 	void setUniform1f(const std::string& name, float value);
 	void setUniform4f(const std::string& name, float f1, float f2, float f3, float f4);
-	void setUniformMat4f(const std::string& name, const glm::mat4& matrix);
+	void setUniformMat4f(const std::string& name, const glm::mat4& matrix) const;
 
 private:
 	unsigned int CreateShader(const std::string& vertexShader, const std::string& fragmentShader);

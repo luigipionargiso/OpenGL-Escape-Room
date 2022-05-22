@@ -35,7 +35,7 @@ void Shader::setUniform1i(const std::string& name, int value)
 
 void Shader::setUniform1f(const std::string& name, float value)
 {
-	glUniform1i(GetUniformLocation(name), value);
+	glUniform1f(GetUniformLocation(name), value);
 }
 
 void Shader::setUniform4f(const std::string& name, float f1, float f2, float f3, float f4)
@@ -43,9 +43,9 @@ void Shader::setUniform4f(const std::string& name, float f1, float f2, float f3,
 	glUniform4f(GetUniformLocation(name), f1, f2, f3, f4);
 }
 
-void Shader::setUniformMat4f(const std::string& name, const glm::mat4& matrix)
+void Shader::setUniformMat4f(const std::string& name, const glm::mat4& matrix) const
 {
-	glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &matrix[0][0]);
+	glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
 unsigned int Shader::CreateShader(const std::string& vertexShader, const std::string& fragmentShader)

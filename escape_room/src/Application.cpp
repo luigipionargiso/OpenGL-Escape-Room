@@ -11,128 +11,130 @@
 #include "IndexBuffer.h"
 #include "Shader.h"
 #include "Texture.h"
+#include "window/Window.h"
+#include "Debug.h"
+#include "window/Callbacks.h"
+#include "input/Keyboard.h"
+#include "input/Mouse.h"
 
 #include "vendor/glm/glm.hpp"
 #include "vendor/glm/gtc/matrix_transform.hpp"
 
-//#include <windows.h>
-//#ifdef __cplusplus
-//extern "C" {
-//#endif
-//
-//    __declspec(dllexport) DWORD NvOptimusEnablement = 1;
-//    __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
-//
-//#ifdef __cplusplus
-//}
-//#endif
-
-void GLAPIENTRY errorOccurredGL(GLenum source,
-    GLenum type,
-    GLuint id,
-    GLenum severity,
-    GLsizei length,
-    const GLchar* message,
-    const void* userParam)
+int main(void)
 {
-    printf("Message from OpenGL:\nSource: 0x%x\nType: 0x%x\n"
-        "Id: 0x%x\nSeverity: 0x%x\n", source, type, id, severity);
-    printf("%s\n", message);
-    exit(-1); // shut down the program gracefully (it does cleanup stuff too)
-              // without exit(), OpenGL will constantly print the error message... make sure to kill your program.
-}
+    Window window(800, 600, "Hello World");
+    window.MakeCurrent();
+    Window::SetSwapInterval(1);
 
-int main(void) {
-    GLFWwindow* window;
-
-    if (!glfwInit())
-        return -1;
-
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    //glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    window = glfwCreateWindow(800, 600, "Hello World", NULL, NULL);
-    if (!window) {
-        glfwTerminate();
-        return -1;
-    }
-
-    glfwMakeContextCurrent(window);
+    window.SetFrameBufferSizeCallback((function)framebuffer_size_callback);
+    //glfwSetCursorPosCallback(window.GetGLFWWindow(), mouse_callback);
+    //window.SetKeyCallback((function)key_callback2);
 
     if (glewInit() != GLEW_OK) {
         std::cerr << "Cannot initialize GLEW" << std::endl;
         return -1;
     }
 
-    //debug
-    glEnable(GL_DEBUG_OUTPUT);
-    glDebugMessageCallback(errorOccurredGL, nullptr);
-
-    std::cout << "GLEW version: " << glewGetString(GLEW_VERSION) << std::endl;
-    std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
-    std::cout << "Shading Language version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
-    std::cout << "GL_VENDOR: " << glGetString(GL_VENDOR) << std::endl;
-    std::cout << "GL_RENDERER: " << glGetString(GL_RENDERER) << std::endl;
-    std::cout << "GLFW version: " << glfwGetVersionString() << std::endl;
+#ifdef DEBUG
+    Debug::EnableDebug();
+    Debug::PrintVersionsOnConsole();
+#endif
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_DEPTH_TEST);
 
-    float positions[16] = {
+    /*float positions[16] = {
         -50.0f, -50.0f, 0.0f, 0.0f,
          50.0f,  50.0f, 1.0f, 1.0f,
          50.0f, -50.0f, 1.0f, 0.0f,
         -50.0f,  50.0f, 0.0f, 1.0f
-    };
+    };*/
 
-    unsigned int indices[6] = {
-        0, 2, 1, 1, 3, 0
+    float positions[40] = {
+        -0.5f, -0.5f, -0.5f,  1.0f, 0.0f, //0
+         0.5f, -0.5f, -0.5f,  0.0f, 0.0f, //1
+         0.5f,  0.5f, -0.5f,  0.0f, 1.0f, //2
+        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f, //3
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, //4
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f, //5
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f, //6
+        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, //7
     };
 
     /* Array and Vertex Buffers */
     VertexArray va;
-    VertexBuffer vb(positions, 4 * 4 * sizeof(float));
+    VertexBuffer vb(positions, 40 * sizeof(float));
     VertexBufferLayout layout;
-    layout.Push<float>(2);
+    layout.Push<float>(3);
     layout.Push<float>(2);
     va.AddBuffer(vb, layout);
 
     //index buffer
-    IndexBuffer ib(indices, 6);
-
-    //transformatiomn matrices
-    glm::mat4 proj = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f);
-    glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-    glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(300.0f, 300.0f, 0.0f));
-
-    glm::mat4 mvp = proj * view * model;
+    /*unsigned int indices[6] = {
+        0, 2, 1, 1, 3, 0
+    };*/
+    unsigned int indices[36] = {
+        0, 1, 2, 0, 3, 2,
+        4, 0, 3, 4, 3, 7,
+        4, 5, 7, 5, 6, 7,
+        5, 1, 6, 1, 2, 6,
+        7, 6, 3, 6, 2, 3,
+        4, 5, 0, 5, 1, 0
+    };
+    IndexBuffer ib(indices, 36);
 
     // shader
     Shader shader("res/shaders/basic.vert", "res/shaders/basic.frag");
     shader.Bind();
-
+    
     // uniform
-    shader.setUniform4f("u_color", 0.8f, 0.4f, 0.1f, 1.0f);
-    shader.setUniformMat4f("u_MVP", mvp);
+    glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+    shader.setUniformMat4f("u_Model", model);
+
+    //glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0f));
+    /*view = glm::rotate(view, glm::radians(45.0f), glm::vec3(0.0, 1.0, 0.0));
+    view = glm::rotate(view, glm::radians(30.0f), glm::vec3(0.0, 0.0, 1.0));*/
+    //shader.setUniformMat4f("u_View", view);
+    Camera camera2;
+    glm::mat4 view = camera2.LookAt(glm::vec3(0, 0, -5.0), glm::vec3(0), glm::vec3(0, 1.0, 0));
+
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+    shader.setUniformMat4f("u_Projection", proj);
 
     // texture
-    Texture texture("res/textures/image.jpg");
+    //Texture texture("res/textures/image.jpg");
+    Texture texture("C:/Users/luigi/Pictures/1. Fotografia/tmp/sacra di san michele/_DSC3341-1.jpg");
     texture.Bind();
     shader.setUniform1i("u_Texture", 0);
 
     Renderer renderer;
 
-    while (!glfwWindowShouldClose(window))
-    {
-        /* Render here */
-        renderer.Draw(va, ib, shader);
+    Camera camera;
 
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+    Keyboard key;
+    key.AddKeyObserver(&camera);
+
+    Mouse mouse;
+    mouse.AddMousePositionObserver(&camera);
+
+    while (window.IsOpen())
+    {
+        key.ProcessInput(window);
+        mouse.ProcessInput(window);
+
+        renderer.Clear();
+
+        view = camera.GetViewMatrix();
+        shader.setUniformMat4f("u_View", view);
+
+        renderer.DrawIndexed(va, ib, shader);
+
+        window.SwapFrameBuffer();
+        window.PollEvents();
     }
 
-    glfwTerminate();
+    Window::CloseAllWindows();
+
     return 0;
 }

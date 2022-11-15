@@ -1,4 +1,25 @@
-/bin-int
-/bin
-/.vs
-/dependencies
+#ignore binaries
+bin-int
+bin
+
+#ignore visual studio files
+.vs
+*.sln
+*.vcxproj*
+
+#ignore dependencies folder
+dependencies
+
+#ignore text and log files
+*.log
+*.txt
+
+#ignore images
+*.jpg
+*.png
+
+#ignore 3d model files
+*.obj
+*.fbx
+*.blend
+*.mtl

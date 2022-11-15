@@ -1,34 +1,35 @@
-#define GLEW_STATIC
-
 #include <iostream>
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
 
-#include "VertexArray.h"
-#include "VertexBuffer.h"
-#include "VertexBufferLayout.h"
-#include "IndexBuffer.h"
-#include "Shader.h"
-#include "Texture.h"
-#include "window/Window.h"
+#ifdef DEBUG
 #include "Debug.h"
-#include "window/Callbacks.h"
-#include "input/Keyboard.h"
-#include "input/Mouse.h"
+#endif
+
+#include "engine/VertexArray.h"
+#include "engine/VertexBuffer.h"
+#include "engine/VertexBufferLayout.h"
+#include "engine/IndexBuffer.h"
+#include "engine/Shader.h"
+#include "engine/Texture.h"
+#include "engine/window/Window.h"
+#include "engine/input/Keyboard.h"
+#include "engine/input/Mouse.h"
+#include "game/Camera.h"
 
 #include "vendor/glm/glm.hpp"
 #include "vendor/glm/gtc/matrix_transform.hpp"
+
+#include "engine/model_loader/Model.h"
+
+#include <chrono>
 
 int main(void)
 {
     Window window(800, 600, "Hello World");
     window.MakeCurrent();
-    Window::SetSwapInterval(1);
-
-    window.SetFrameBufferSizeCallback((function)framebuffer_size_callback);
-    //glfwSetCursorPosCallback(window.GetGLFWWindow(), mouse_callback);
-    //window.SetKeyCallback((function)key_callback2);
+    window.SetSwapInterval(1);
 
     if (glewInit() != GLEW_OK) {
         std::cerr << "Cannot initialize GLEW" << std::endl;
@@ -43,92 +44,131 @@ int main(void)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_MULTISAMPLE);
 
-    /*float positions[16] = {
-        -50.0f, -50.0f, 0.0f, 0.0f,
-         50.0f,  50.0f, 1.0f, 1.0f,
-         50.0f, -50.0f, 1.0f, 0.0f,
-        -50.0f,  50.0f, 0.0f, 1.0f
-    };*/
+    //glEnable(GL_CULL_FACE);
 
-    float positions[40] = {
-        -0.5f, -0.5f, -0.5f,  1.0f, 0.0f, //0
-         0.5f, -0.5f, -0.5f,  0.0f, 0.0f, //1
-         0.5f,  0.5f, -0.5f,  0.0f, 1.0f, //2
-        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f, //3
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, //4
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f, //5
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f, //6
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, //7
+    /*
+    float vertices[] = {
+        // positions          // normals           // texture coords
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
+
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
+
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
     };
 
-    /* Array and Vertex Buffers */
     VertexArray va;
-    VertexBuffer vb(positions, 40 * sizeof(float));
+    VertexBuffer vb(vertices, sizeof(vertices));
     VertexBufferLayout layout;
     layout.Push<float>(3);
+    layout.Push<float>(3);
     layout.Push<float>(2);
-    va.AddBuffer(vb, layout);
-
-    //index buffer
-    /*unsigned int indices[6] = {
-        0, 2, 1, 1, 3, 0
-    };*/
-    unsigned int indices[36] = {
-        0, 1, 2, 0, 3, 2,
-        4, 0, 3, 4, 3, 7,
-        4, 5, 7, 5, 6, 7,
-        5, 1, 6, 1, 2, 6,
-        7, 6, 3, 6, 2, 3,
-        4, 5, 0, 5, 1, 0
-    };
-    IndexBuffer ib(indices, 36);
+    va.AddBuffer(vb, layout);*/
 
     // shader
     Shader shader("res/shaders/basic.vert", "res/shaders/basic.frag");
     shader.Bind();
     
-    // uniform
+    // tranformation matrices
     glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+    //model = glm::scale(model, glm::vec3(0.01f, 0.01f, 0.01f));
     shader.setUniformMat4f("u_Model", model);
 
-    //glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0f));
-    /*view = glm::rotate(view, glm::radians(45.0f), glm::vec3(0.0, 1.0, 0.0));
-    view = glm::rotate(view, glm::radians(30.0f), glm::vec3(0.0, 0.0, 1.0));*/
-    //shader.setUniformMat4f("u_View", view);
-    Camera camera2;
-    glm::mat4 view = camera2.LookAt(glm::vec3(0, 0, -5.0), glm::vec3(0), glm::vec3(0, 1.0, 0));
-
-    glm::mat4 proj = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
-    shader.setUniformMat4f("u_Projection", proj);
-
     // texture
-    //Texture texture("res/textures/image.jpg");
-    Texture texture("C:/Users/luigi/Pictures/1. Fotografia/tmp/sacra di san michele/_DSC3341-1.jpg");
-    texture.Bind();
-    shader.setUniform1i("u_Texture", 0);
+    /*Texture diffuse("res/textures/_DSC3341-1.jpg", DIFFUSE);
+    Texture specular("res/textures/specular.jpg", SPECULAR);
 
-    Renderer renderer;
+    diffuse.Bind(0);
+    shader.setUniform1i("u_Material.diffuse", 0);
 
-    Camera camera;
+    specular.Bind(1);
+    shader.setUniform1i("u_Material.specular", 1);*/
+
+    Camera camera(
+        glm::vec3(0, 0, 0.0),
+        glm::vec3(0, 0, -1.0),
+        glm::vec3(0, 1.0, 0)
+    );
 
     Keyboard key;
     key.AddKeyObserver(&camera);
 
     Mouse mouse;
     mouse.AddMousePositionObserver(&camera);
+    mouse.AddMouseScrollObserver(&camera);
+
+    float y = 1.0f, off = 0.01f;
+    shader.setUniform3fv("u_Light.ambient", glm::vec3(1.0, 1.0, 1.0));
+    shader.setUniform3fv("u_Light.diffuse", glm::vec3(1.0, 1.0, 1.0));
+    shader.setUniform3fv("u_Light.specular", glm::vec3(1.0, 1.0, 1.0));
+
+    auto start = std::chrono::high_resolution_clock::now();
+    Model backpack("res/cube/cube3.fbx");
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<float> duration = end - start;
+    std::cout << duration.count() << "s " << '\n';
 
     while (window.IsOpen())
     {
+        Renderer::Clear();
         key.ProcessInput(window);
         mouse.ProcessInput(window);
 
-        renderer.Clear();
+        shader.Bind();
 
-        view = camera.GetViewMatrix();
+        glm::mat4 proj = camera.GetProjMatrix();
+        shader.setUniformMat4f("u_Projection", proj);
+        glm::mat4 view = camera.GetViewMatrix();
         shader.setUniformMat4f("u_View", view);
 
-        renderer.DrawIndexed(va, ib, shader);
+        if (y > 1.0f)
+            off = -0.01f;
+        else if (y < -1.0f)
+            off = 0.01f;
+        y += off;
+        shader.setUniform3fv("u_Light.position", glm::vec3(2.0, y, 2.0));
+        shader.setUniform3fv("u_ViewPos", camera.GetPosition());
+
+        //Renderer::Draw(va, shader);
+
+        backpack.Draw(shader);
 
         window.SwapFrameBuffer();
         window.PollEvents();

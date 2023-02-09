@@ -1,36 +1,44 @@
 #pragma once
 
-#include "engine/input/KeyObserver.h"
-#include "engine/input/MousePositionObserver.h"
-#include "engine/input/MouseScrollObserver.h"
 #include "vendor/glm/glm.hpp"
-#include "vendor/glm/gtc/type_ptr.hpp"
+#include <engine/Shader.h>
 
-class Camera : public KeyObserver, public MousePositionObserver, public MouseScrollObserver
+class Camera
 {
-private:
-	glm::vec3 m_Position;
-	glm::vec3 m_Direction;
-	glm::vec3 m_Up;
-	float m_FoV, m_Aspect, m_Near, m_Far;
-
 public:
-	Camera(glm::vec3 position, glm::vec3 direction, glm::vec3 up);
+	Camera(
+		glm::vec3 position,
+		glm::vec3 direction,
+		glm::vec3 up,
+		float fov,
+		float aspect,
+		float near,
+		float far
+	);
 	~Camera() = default;
+	void Update();
+	void Draw(Shader& shader);
 
-	void onKeyboard(int key, bool pressed);
-	void onMouseMove(double xpos, double ypos);
-	void onMouseScroll(double offset);
+	void SetPosition(const glm::vec3 position);
+	void SetDirection(const glm::vec3 direction);
+	void SetUpVector(const glm::vec3 up);
 
-	glm::mat4 LookAt(const glm::vec3 position, const glm::vec3 direction, const glm::vec3 up);
-	glm::mat4 SetPosition(const glm::vec3 position);
-	glm::mat4 SetDirection(const glm::vec3 direction);
-	glm::mat4 SetUpVector(const glm::vec3 up);
-	/* proj setters */
+	inline glm::vec3 GetPosition() const { return glm::vec3(position_.z, position_.x, position_.y); }
+	inline glm::vec3 GetDirection() const { return glm::vec3(direction_.z, direction_.x, direction_.y); }
+	inline glm::vec3 GetUpVector() const { return glm::vec3(up_.z, up_.x, up_.y); }
+	inline glm::mat4 GetViewMatrix() const { return view_matrix_; }
+	inline glm::mat4 GetProjectionMatrix() const { return projection_matrix_; }
 
-	inline glm::mat4 GetViewMatrix() const { return glm::lookAt(m_Position, m_Direction + m_Position, m_Up); }
-	inline glm::mat4 GetProjMatrix() const { return glm::perspective(glm::radians(m_FoV), m_Aspect, m_Near, m_Far); }
-	inline glm::vec3 GetPosition() const { return m_Position; }
-	inline glm::vec3 GetDirection() const { return m_Direction; }
-	inline glm::vec3 GetUpVector() const { return m_Up; }
+private:
+	glm::vec3 position_;
+	glm::vec3 direction_;
+	glm::vec3 up_;
+	float fov_, aspect_, near_, far_;
+	float speed_;
+	glm::mat4 view_matrix_;
+	glm::mat4 projection_matrix_;
+
+	void UpdatePosition();
+	void UpdateRotation();
 };
+

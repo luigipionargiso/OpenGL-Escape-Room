@@ -2,30 +2,38 @@
 
 #include <string>
 
-enum TextureType {DIFFUSE, SPECULAR, NORMAL};
+enum TextureType
+{
+	DIFFUSE, SPECULAR, NORMAL
+};
 
 class Texture
 {
-private:
-	unsigned int m_rendererID;
-	TextureType m_type;
-	std::string m_filePath;
-	unsigned char* m_localBuffer;
-	int m_width, m_height, m_bpp;
 public:
 	Texture(const std::string& path, TextureType type);
 	~Texture();
 
-	Texture(Texture&& other) noexcept;	// move constructor
-	Texture& operator=(Texture&& other) noexcept;	// move assignment
+	// move constructor
+	Texture(Texture&& other) noexcept;
+	// move assignment
+	Texture& operator=(Texture&& other) noexcept;
 
-	Texture(const Texture& other) = delete;	// copy constructor
-	Texture& operator=(const Texture& other) = delete; // copy assignment
+	// copy constructor
+	Texture(const Texture& other) = delete;
+	// copy assignment
+	Texture& operator=(const Texture& other) = delete;
 
 	void Bind(unsigned int slot = 0) const;
 	void Unbind() const;
 
-	inline int GetWidth() const { return m_width;  }
-	inline int GetHeight() const { return m_height;  }
-	inline TextureType GetType() const { return m_type; }
+	inline TextureType GetType() const { return type_; }
+	inline int GetWidth() const { return width_;  }
+	inline int GetHeight() const { return height_;  }
+
+private:
+	unsigned int id_;
+	TextureType type_;
+	std::string filename_;
+	unsigned char* local_buffer_;
+	int width_, height_, bpp_;
 };

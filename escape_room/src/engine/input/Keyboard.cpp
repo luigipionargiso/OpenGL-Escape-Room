@@ -1,30 +1,26 @@
 #include "Keyboard.h"
-#include <algorithm>
+#include "../window/Window.h"
+#include "GLFW/glfw3.h"
 
-void Keyboard::KeyNotify(int key, bool pressed)
+/* initialize the hash map */
+std::unordered_map<Key, KeyStatus> Keyboard::keys_ = [] {
+    std::unordered_map<Key, KeyStatus> keys_;
+
+    for (int k = KEY_FIRST; k != KEY_LAST; k++)
+        keys_[static_cast<Key>(k)] = RELEASE;
+
+    return keys_;
+}();
+
+KeyStatus Keyboard::GetKey(Key k)
 {
-    for (unsigned int i = 0; i < observers.size(); i++)
-        observers[i]->onKeyboard(key, pressed);
+    return keys_.at(k);
 }
 
-void Keyboard::AddKeyObserver(KeyObserver* observer)
+void Keyboard::PollEvents(Window& w)
 {
-    observers.push_back(observer);
-}
-
-void Keyboard::RemoveKeyObserver(KeyObserver* observer)
-{
-    observers.erase(std::remove(observers.begin(), observers.end(), observer), observers.end());
-}
-
-void Keyboard::ProcessInput(Window& window)
-{
-    if (window.GetKey(GLFW_KEY_W))
-        KeyNotify(GLFW_KEY_W, true);
-    if (window.GetKey(GLFW_KEY_A))
-        KeyNotify(GLFW_KEY_A, true);
-    if (window.GetKey(GLFW_KEY_S))
-        KeyNotify(GLFW_KEY_S, true);
-    if (window.GetKey(GLFW_KEY_D))
-        KeyNotify(GLFW_KEY_D, true);
+    keys_[KEY_W] = static_cast<KeyStatus>(glfwGetKey(w.GetGLFWPointer(), GLFW_KEY_W));
+    keys_[KEY_A] = static_cast<KeyStatus>(glfwGetKey(w.GetGLFWPointer(), GLFW_KEY_A));
+    keys_[KEY_S] = static_cast<KeyStatus>(glfwGetKey(w.GetGLFWPointer(), GLFW_KEY_S));
+    keys_[KEY_D] = static_cast<KeyStatus>(glfwGetKey(w.GetGLFWPointer(), GLFW_KEY_D));
 }

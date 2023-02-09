@@ -1,49 +1,36 @@
 #pragma once
 
 #include <string>
+#include <tuple>
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
-
-struct Point2D
-{
-	double x, y;
-};
+#include "vendor/glm/glm.hpp"
 
 class Window
 {
-private:
-	GLFWwindow* m_Window;
-	GLboolean m_fullscreen;
-	static GLdouble deltaTime;
-	static GLdouble lastFrame;
 public:
-	Window(GLuint width, GLuint height, std::string window_name);
-	~Window() = default;
+    Window(unsigned int width, unsigned int height, std::string name);
+    ~Window() = default;
 
-	void MakeCurrent() const { glfwMakeContextCurrent(m_Window); }
-	bool IsOpen() const { return !glfwWindowShouldClose(m_Window); }
-	void Close() const { glfwWindowShouldClose(m_Window); }
+    inline bool IsOpen() const { return !glfwWindowShouldClose(glfw_pointer_); }
+    inline void Close() const { glfwSetWindowShouldClose(glfw_pointer_, GLFW_TRUE); }
+    inline bool IsHovered() const { return glfwGetWindowAttrib(glfw_pointer_, GLFW_HOVERED); }
+    inline GLFWwindow* GetGLFWPointer() { return glfw_pointer_; }
 
-	bool GetKey(int key) const;
-	bool GetMouseButton(int key) const;
-	Point2D GetCursorPosition() const;
-	//void SetCursorPosition(double xpos, double ypos) const;
-	bool IsHovered() const;
+    void MakeContextCurrent() const;
+    void SwapBuffers();
+    void ToggleFullscreen();
+    void SetWindowIcon(std::string filepath) const;
+    glm::vec2 GetFrameBufferSize() const;
+    
+    static void PollEvents() { glfwPollEvents(); }
+    static void CloseAllWindows() { glfwTerminate(); }
+    static const Window* GetActiveWindow() { return active_; };
 
-	void SetWindowIcon(std::string icon_filepath) const;
-	void ToggleFullscreen();
+private:
+    GLFWwindow* glfw_pointer_;
+    bool is_fullscreen_;
+    static const Window* active_;
 
-	/* Screen coordinates don't necessarily correspond to pixels */
-	std::tuple<GLint, GLint> GetFrameBufferSize() const;
-	void SwapFrameBuffer();
-
-	static void SetSwapInterval(GLint interval) { glfwSwapInterval(interval); }
-	static void PollEvents() { glfwPollEvents(); }
-	static void WaitEvents() { glfwWaitEvents(); }
-	static void WaitEventsTimeout(GLdouble timeout) { glfwWaitEventsTimeout(timeout); }
-	static void CloseAllWindows() { glfwTerminate(); }
-	static GLdouble GetTime() { return glfwGetTime(); }
-	static GLdouble GetDeltaTime() { return Window::deltaTime; }
-
-	inline GLFWwindow* GetGLFWWindow() { return m_Window; }
+    static void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 };

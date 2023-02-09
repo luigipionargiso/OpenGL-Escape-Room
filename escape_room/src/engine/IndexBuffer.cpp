@@ -1,46 +1,43 @@
 #include "IndexBuffer.h"
-#include <assert.h>
 #include "GL/glew.h"
 
 IndexBuffer::IndexBuffer(const unsigned int* data, unsigned int count)
-    :m_count(count)
+    :count_(count)
 {
-    assert(sizeof(unsigned int) == sizeof(GLuint));
-
-    glGenBuffers(1, &m_rendererID);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_rendererID);
+    glGenBuffers(1, &id_);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id_);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(unsigned int), data, GL_STATIC_DRAW);
 }
 
 IndexBuffer::~IndexBuffer()
 {
-    glDeleteBuffers(1, &m_rendererID);
+    glDeleteBuffers(1, &id_);
 }
 
 IndexBuffer::IndexBuffer(IndexBuffer&& other) noexcept
-    :m_rendererID(other.m_rendererID),
-    m_count(other.m_count)
+    :id_(other.id_),
+    count_(other.count_)
 {
-    other.m_rendererID = 0;
-    other.m_count = 0;
+    other.id_ = 0;
+    other.count_ = 0;
 }
 
 IndexBuffer& IndexBuffer::operator=(IndexBuffer&& other) noexcept
 {
     if (this != &other)
     {
-        m_rendererID = other.m_rendererID;
-        m_count = other.m_count;
+        id_ = other.id_;
+        count_ = other.count_;
 
-        other.m_rendererID = 0;
-        other.m_count = 0;
+        other.id_ = 0;
+        other.count_ = 0;
     }
     return *this;
 }
 
 void IndexBuffer::Bind() const
 {
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_rendererID);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id_);
 }
 
 void IndexBuffer::Unbind() const

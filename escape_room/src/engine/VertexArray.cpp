@@ -2,37 +2,37 @@
 #include "GL/glew.h"
 
 VertexArray::VertexArray()
-	:m_bufferSize(0), m_indicesCount(0)
+	:buffer_size_(0), indices_count_(0)
 {
-	glGenVertexArrays(1, &m_rendererID);
+	glGenVertexArrays(1, &id_);
 }
 
 VertexArray::~VertexArray()
 {
-	glDeleteVertexArrays(1, &m_rendererID);
+	glDeleteVertexArrays(1, &id_);
 }
 
 VertexArray::VertexArray(VertexArray&& other) noexcept
-	:m_rendererID(other.m_rendererID),
-	m_bufferSize(other.m_bufferSize),
-	m_indicesCount(other.m_indicesCount)
+	:id_(other.id_),
+	buffer_size_(other.buffer_size_),
+	indices_count_(other.indices_count_)
 {
-	other.m_rendererID = 0;
-	other.m_bufferSize = 0;
-	other.m_indicesCount = 0;
+	other.id_ = 0;
+	other.buffer_size_ = 0;
+	other.indices_count_ = 0;
 }
 
 VertexArray& VertexArray::operator=(VertexArray&& other) noexcept
 {
 	if (this != &other)
 	{
-		m_rendererID = other.m_rendererID;
-		m_bufferSize = other.m_bufferSize;
-		m_indicesCount = other.m_indicesCount;
+		id_ = other.id_;
+		buffer_size_ = other.buffer_size_;
+		indices_count_ = other.indices_count_;
 
-		other.m_rendererID = 0;
-		other.m_bufferSize = 0;
-		other.m_indicesCount = 0;
+		other.id_ = 0;
+		other.buffer_size_ = 0;
+		other.indices_count_ = 0;
 	}
 	return *this;
 }
@@ -41,28 +41,29 @@ void VertexArray::AddBuffer(const VertexBuffer& vb, const VertexBufferLayout& la
 {
 	Bind();
 	vb.Bind();
-	const auto& elements = layout.getElements();
+	const auto& elements = layout.GetElements();
 	size_t offset = 0;
 	for (unsigned int i = 0; i < elements.size(); i++)
 	{
 		const auto& element = elements[i];
 		glVertexAttribPointer(i, element.count, element.type,
-			element.normalized, layout.getStride(), (const void*)offset);
+			element.normalized, layout.GetStride(), (const void*)offset);
 		glEnableVertexAttribArray(i);
 		offset += (size_t)element.count * VertexBufferElement::GetSizeOfType(element.type);
 	}
-	m_bufferSize = vb.GetSize();
+	buffer_size_ = vb.GetSize();
 }
 
 void VertexArray::AddIndexBuffer(const IndexBuffer& ib)
 {
+	// Bind(); ??
 	ib.Bind();
-	m_indicesCount = ib.getCount();
+	indices_count_ = ib.getCount();
 }
 
 void VertexArray::Bind() const
 {
-	glBindVertexArray(m_rendererID);
+	glBindVertexArray(id_);
 }
 
 void VertexArray::Unbind() const

@@ -8,17 +8,33 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+struct AABB
+{
+    glm::vec3 min;
+    glm::vec3 max;
+};
+
 class Model
 {
+public:
+    Model(std::string filepath);
+
+    // move constructor
+    Model(Model&& other) noexcept = default;
+    // move assignment
+    Model& operator=(Model&& other) noexcept = default;
+
+    void Draw(Shader& shader) const;
+    AABB GetAABB() const { return bounding_box_; }
+
 private:
-    std::vector<Mesh> m_meshes;
-    std::string m_directory;
+    std::vector<Mesh> meshes_;
+    std::string directory_;
+    AABB bounding_box_;
 
     void processNode(aiNode* node, const aiScene* scene);
     Mesh processMesh(aiMesh* mesh, const aiScene* scene);
-    Vertex LoadVertices(aiMesh* mesh, unsigned int index);
+    Vertex LoadVertex(aiMesh* mesh, unsigned int index);
     Texture LoadTexture(aiMaterial* mat, aiTextureType ai_type, TextureType type);
-public:
-    Model(std::string path);
-    void Draw(Shader& shader);
+    AABB CalculateAABB(const aiScene* scene);
 };

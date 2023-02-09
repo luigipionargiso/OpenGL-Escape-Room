@@ -3,7 +3,6 @@
 struct Material {
     sampler2D diffuse;
     sampler2D specular;
-	sampler2D normal;
     float shininess;
 };
 
@@ -15,9 +14,8 @@ struct Light {
 };
 
 in vec2 v_TexCoord;
+in vec3 v_Normal;
 in vec3 v_FragPos;
-flat in mat3 v_TBN;
-in vec3 v_debug;
 
 uniform vec3 u_ViewPos;
 uniform Material u_Material;
@@ -25,15 +23,8 @@ uniform Light u_Light;
 
 void main()
 {
-	/* sample normal map */
-	vec3 normal_encoded = texture(u_Material.normal, v_TexCoord).rgb;
-	vec3 normal = normal_encoded * 2.0 - 1.0;  
-	
-	/* tranform from tangent space to world space */
-	normal = normalize(v_TBN * normal); 
-
 	/* attenuation */
-	float distance = length(u_Light.position - v_FragPos);
+	float distance    = length(u_Light.position - v_FragPos);
 	float attenuation = 1.0 / (1.0 + 0.09 * distance + 0.032 * (distance * distance));
 
 	/* ambient light */
@@ -43,8 +34,9 @@ void main()
 					(texture(u_Material.diffuse, v_TexCoord)).rgb;
 
 	/* diffuse light */
+	vec3 norm = normalize(v_Normal);
 	vec3 lightDir = normalize(u_Light.position - v_FragPos);
-	vec3 diffuse = max(dot(normal, lightDir), 0.0) *
+	vec3 diffuse = max(dot(norm, lightDir), 0.0) *
 					u_Light.diffuse *
 					attenuation *
 					(texture(u_Material.diffuse, v_TexCoord)).rgb; 
@@ -52,7 +44,7 @@ void main()
 	/* specular light */
 	float specular_strength = 0.4;
 	vec3 viewDir = normalize(u_ViewPos - v_FragPos);
-	vec3 reflectDir = reflect(-lightDir, normal); 
+	vec3 reflectDir = reflect(-lightDir, norm); 
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
 	vec3 specular = specular_strength *
 					spec *
@@ -61,5 +53,5 @@ void main()
 					(texture(u_Material.specular, v_TexCoord)).rgb;
 
 	vec3 light = ambient + diffuse + specular;
-	gl_FragColor = vec4(light, 1.0);
+	gl_FragColor =  vec4(light, 1.0);
 }

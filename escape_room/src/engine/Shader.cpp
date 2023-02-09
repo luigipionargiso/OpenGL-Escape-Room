@@ -5,21 +5,21 @@
 #include "GL/glew.h"
 
 Shader::Shader(const std::string& vertex_shader_filename, const std::string& fragment_shader_filename)
-	:m_RendererID(0)
+	:id_(0)
 {
-	std::string vertexShader = ParseShader("res/shaders/basic.vert");
-	std::string fragmentShader = ParseShader("res/shaders/basic.frag");
-	m_RendererID = CreateShader(vertexShader, fragmentShader);
+	std::string vertex_shader = ParseShader(vertex_shader_filename);
+	std::string fragment_shader = ParseShader(fragment_shader_filename);
+	id_ = CreateShader(vertex_shader, fragment_shader);
 }
 
 Shader::~Shader()
 {
-	glDeleteProgram(m_RendererID);
+	glDeleteProgram(id_);
 }
 
 void Shader::Bind() const
 {
-	glUseProgram(m_RendererID);
+	glUseProgram(id_);
 }
 
 void Shader::Unbind() const
@@ -42,22 +42,22 @@ void Shader::setUniform4f(const std::string& name, float f1, float f2, float f3,
 	glUniform4f(GetUniformLocation(name), f1, f2, f3, f4);
 }
 
-void Shader::setUniformMat4f(const std::string& name, const glm::mat4& matrix) const
+void Shader::setUniformMat4f(const std::string& name, const glm::mat4& matrix)
 {
-	int loc = glGetUniformLocation(m_RendererID, name.c_str());
+	int loc = glGetUniformLocation(id_, name.c_str());
 	glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
-void Shader::setUniform3fv(const std::string& name, const glm::vec3& vector) const
+void Shader::setUniform3fv(const std::string& name, const glm::vec3& vector)
 {
 	glUniform3fv(GetUniformLocation(name), 1, glm::value_ptr(vector));
 }
 
-unsigned int Shader::CreateShader(const std::string& vertexShader, const std::string& fragmentShader)
+unsigned int Shader::CreateShader(const std::string& vertex_shader, const std::string& fragment_shader)
 {
 	unsigned int program = glCreateProgram();
-	unsigned int vs = CompileShader(vertexShader, GL_VERTEX_SHADER);
-	unsigned int fs = CompileShader(fragmentShader, GL_FRAGMENT_SHADER);
+	unsigned int vs = CompileShader(vertex_shader, GL_VERTEX_SHADER);
+	unsigned int fs = CompileShader(fragment_shader, GL_FRAGMENT_SHADER);
 
 	glAttachShader(program, vs);
 	glAttachShader(program, fs);
@@ -113,15 +113,15 @@ std::string Shader::ParseShader(const std::string& filepath)
 
 int Shader::GetUniformLocation(const std::string& name) const
 {
-	auto locationSearch = m_UniformLocationCache.find(name);
-	if (locationSearch != m_UniformLocationCache.end())
+	auto locationSearch = uniform_location_cache_.find(name);
+	if (locationSearch != uniform_location_cache_.end())
 		return locationSearch->second;
 
-	int location = glGetUniformLocation(m_RendererID, name.c_str());
+	int location = glGetUniformLocation(id_, name.c_str());
 	if (location == -1)
 		std::cerr << "Warning: uniform " << name << " doesn't exist!" << std::endl;
 
-	m_UniformLocationCache[name] = location;
+	uniform_location_cache_[name] = location;
 
 	return location;
 }

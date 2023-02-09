@@ -1,98 +1,33 @@
 #include "Mouse.h"
+#include "GLFW/glfw3.h"
 
-GLdouble scroll_offset = 0.0;
-GLdouble last_scroll = 0.0;
+double Mouse::cursor_x_ = 0.0;
+double Mouse::cursor_y_ = 0.0;
+MouseButtonStatus Mouse::left_ = RELEASE_M;
+MouseButtonStatus Mouse::right_ = RELEASE_M;
 
-void Mouse::ClickNotify(int button, bool pressed)
+glm::vec2 Mouse::GetCursorPosition()
 {
-    for (unsigned int i = 0; i < m_ButtonObservers.size(); i++)
-        m_ButtonObservers[i]->onMouseClick(button, pressed);
+	return glm::vec2(cursor_x_, cursor_y_);
 }
 
-void Mouse::PositionNotify(GLdouble xpos, GLdouble ypos)
+MouseButtonStatus Mouse::GetMouseButton(MouseButton button)
 {
-    for (unsigned int i = 0; i < m_PositionObservers.size(); i++)
-        m_PositionObservers[i]->onMouseMove(xpos, ypos);
+	switch (button)
+	{
+	case MOUSE_BUTTON_LEFT:
+		return left_;
+	case MOUSE_BUTTON_RIGHT:
+		return right_;
+	}
 }
 
-void Mouse::ScrollNotify(GLdouble offset)
+void Mouse::PollEvents(Window& w)
 {
-    for (unsigned int i = 0; i < m_ScrollObservers.size(); i++)
-        m_ScrollObservers[i]->onMouseScroll(offset);
-}
-
-void Mouse::AddMouseButtonObserver(MouseButtonObserver* observer)
-{
-    m_ButtonObservers.push_back(observer);
-}
-
-void Mouse::RemoveMouseButtonObserver(MouseButtonObserver* observer)
-{
-    m_ButtonObservers.erase(
-        std::remove(m_ButtonObservers.begin(), m_ButtonObservers.end(), observer),
-        m_ButtonObservers.end()
-    );
-}
-
-void Mouse::AddMousePositionObserver(MousePositionObserver* observer)
-{
-    m_PositionObservers.push_back(observer);
-}
-
-void Mouse::RemoveMousePositionObserver(MousePositionObserver* observer)
-{
-    m_PositionObservers.erase(
-        std::remove(m_PositionObservers.begin(), m_PositionObservers.end(), observer),
-        m_PositionObservers.end()
-    );
-}
-
-void Mouse::AddMouseScrollObserver(MouseScrollObserver* observer)
-{
-    m_ScrollObservers.push_back(observer);
-}
-
-void Mouse::RemoveMouseScrollObserver(MouseScrollObserver* observer)
-{
-    m_ScrollObservers.erase(
-        std::remove(m_ScrollObservers.begin(), m_ScrollObservers.end(), observer),
-        m_ScrollObservers.end()
-    );
-}
-
-void Mouse::ProcessInput(Window& window)
-{
-    if (window.IsHovered()) {
-        /* Cursor position */
-        Point2D pos = window.GetCursorPosition();
-        PositionNotify(pos.x, pos.y);
-
-        /* Mouse Scroll */
-        //if (scroll_offset != last_scroll) {
-            ScrollNotify(scroll_offset);
-            last_scroll = scroll_offset;
-        //}
-
-        /* Mouse buttons*/
-        static bool left_pressed = false;
-        static bool right_pressed = false;
-        /* da eliminare */
-        if (!left_pressed && window.GetMouseButton(GLFW_MOUSE_BUTTON_LEFT)) {
-            ClickNotify(GLFW_MOUSE_BUTTON_LEFT, true);
-            left_pressed = true;
-        }
-        else if (left_pressed && !window.GetMouseButton(GLFW_MOUSE_BUTTON_LEFT)) {
-            ClickNotify(GLFW_MOUSE_BUTTON_LEFT, false);
-            left_pressed = false;
-        }
-
-        if (!right_pressed && window.GetMouseButton(GLFW_MOUSE_BUTTON_RIGHT)) {
-            ClickNotify(GLFW_MOUSE_BUTTON_RIGHT, true);
-            right_pressed = true;
-        }
-        else if (right_pressed && !window.GetMouseButton(GLFW_MOUSE_BUTTON_RIGHT)) {
-            ClickNotify(GLFW_MOUSE_BUTTON_RIGHT, false);
-            right_pressed = false;
-        }
-    }
+	if (w.IsHovered())
+	{
+		glfwGetCursorPos(w.GetGLFWPointer(), &cursor_x_, &cursor_y_);
+		left_ = static_cast<MouseButtonStatus>(glfwGetMouseButton(w.GetGLFWPointer(), GLFW_MOUSE_BUTTON_LEFT));
+		right_ = static_cast<MouseButtonStatus>(glfwGetMouseButton(w.GetGLFWPointer(), GLFW_MOUSE_BUTTON_RIGHT));
+	}
 }

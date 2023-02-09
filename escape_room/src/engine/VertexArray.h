@@ -6,25 +6,30 @@
 
 class VertexArray
 {
-private:
-	unsigned int m_rendererID;
-	unsigned int m_bufferSize;
-	unsigned int m_indicesCount;
-
 public:
 	VertexArray();
 	~VertexArray();
 
-	VertexArray(VertexArray&& other) noexcept;	// move constructor
-	VertexArray& operator=(VertexArray&& other) noexcept;	// move assignment
+	// move constructor
+	VertexArray(VertexArray&& other) noexcept;
+	// move assignment
+	VertexArray& operator=(VertexArray&& other) noexcept;
 
-	VertexArray(const VertexArray& other) = delete;	// copy constructor
-	VertexArray& operator=(const VertexArray& other) = delete; // copy assignment
+	// copy constructor
+	VertexArray(const VertexArray& other) = delete;
+	// copy assignment
+	VertexArray& operator=(const VertexArray& other) = delete;
 
 	void AddBuffer(const VertexBuffer& vb, const VertexBufferLayout& layout);
 	void AddIndexBuffer(const IndexBuffer& ib);
 	void Bind() const;
 	void Unbind() const;
-	unsigned int GetSize() const { return m_bufferSize; }
-	unsigned int GetIndicesCount() const { return m_indicesCount; }
+
+	inline unsigned int GetSize() const { return buffer_size_; }
+	inline unsigned int GetIndicesCount() const { return indices_count_; }
+
+private:
+	unsigned int id_;
+	unsigned int buffer_size_;
+	unsigned int indices_count_;
 };

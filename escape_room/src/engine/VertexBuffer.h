@@ -2,22 +2,27 @@
 
 class VertexBuffer
 {
-private:
-	unsigned int m_rendererID;
-	unsigned int m_size;
 public:
 	VertexBuffer() = default;
 	VertexBuffer(const void* data, unsigned int size);
 	~VertexBuffer();
 
-	VertexBuffer(VertexBuffer&& other) noexcept;	// move constructor
-	VertexBuffer& operator=(VertexBuffer&& other) noexcept;	// move assignment
+	// move constructor
+	VertexBuffer(VertexBuffer&& other) noexcept;
+	// move assignment
+	VertexBuffer& operator=(VertexBuffer&& other) noexcept;
 
-	VertexBuffer(const VertexBuffer& other) = delete;	// copy constructor
-	VertexBuffer& operator=(const VertexBuffer& other) = delete; // copy assignment
+	// copy constructor
+	VertexBuffer(const VertexBuffer& other) = delete;
+	// copy assignment
+	VertexBuffer& operator=(const VertexBuffer& other) = delete;
 
 	void Bind() const;
 	void Unbind() const;
 
-	unsigned int GetSize() const { return m_size; }
+	unsigned int GetSize() const { return size_; }
+
+private:
+	unsigned int id_;
+	unsigned int size_;
 };

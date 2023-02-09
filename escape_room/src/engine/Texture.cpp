@@ -4,62 +4,67 @@
 #include "vendor/stb_image/stb_image.h"
 
 Texture::Texture(const std::string& path, TextureType type)
-	:m_rendererID(0), m_type(type), m_filePath(path),
-	m_localBuffer(nullptr), m_width(0), m_height(0), m_bpp(0)
+	:id_(0), type_(type), filename_(path),
+	local_buffer_(nullptr), width_(0), height_(0), bpp_(0)
 {
 	stbi_set_flip_vertically_on_load(1);
-	m_localBuffer = stbi_load(path.c_str(), &m_width, &m_height, &m_bpp, 4);
+	local_buffer_ = stbi_load(path.c_str(), &width_, &height_, &bpp_, 4);
 
-	if (m_localBuffer)
+	if (local_buffer_)
 	{
-		glGenTextures(1, &m_rendererID);
-		glBindTexture(GL_TEXTURE_2D, m_rendererID);
+		glGenTextures(1, &id_);
+		glBindTexture(GL_TEXTURE_2D, id_);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_localBuffer);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, local_buffer_);
 		Unbind();
-		stbi_image_free(m_localBuffer);
+		stbi_image_free(local_buffer_);
 	}
 	else
 	{
-		std::cerr << "Failed to load image texture: " << stbi_failure_reason() << '\n';
+		std::cerr << "Failed to load image texture (" 
+			<< path
+			<< ") "
+			<< '\n'
+			<< stbi_failure_reason()
+			<< '\n';
 	}
 }
 
 Texture::~Texture()
 {
-	glDeleteTextures(1, &m_rendererID);
+	glDeleteTextures(1, &id_);
 }
 
 Texture::Texture(Texture&& other) noexcept
-	:m_rendererID(other.m_rendererID),
-	m_type(other.m_type),
-	m_filePath(other.m_filePath),
-	m_localBuffer(other.m_localBuffer),
-	m_width(other.m_width),
-	m_height(other.m_height),
-	m_bpp(other.m_bpp)
+	:id_(other.id_),
+	type_(other.type_),
+	filename_(other.filename_),
+	local_buffer_(other.local_buffer_),
+	width_(other.width_),
+	height_(other.height_),
+	bpp_(other.bpp_)
 {
-	other.m_rendererID = 0;
+	other.id_ = 0;
 }
 
 Texture& Texture::operator=(Texture&& other) noexcept
 {
 	if (this != &other)
 	{
-		m_rendererID = other.m_rendererID;
-		m_type = other.m_type;
-		m_filePath = other.m_filePath;
-		m_localBuffer = other.m_localBuffer;
-		m_width = other.m_width;
-		m_height = other.m_height;
-		m_bpp = other.m_bpp;
+		id_ = other.id_;
+		type_ = other.type_;
+		filename_ = other.filename_;
+		local_buffer_ = other.local_buffer_;
+		width_ = other.width_;
+		height_ = other.height_;
+		bpp_ = other.bpp_;
 
-		other.m_rendererID = 0;
+		other.id_ = 0;
 	}
 	return *this;
 }
@@ -67,7 +72,7 @@ Texture& Texture::operator=(Texture&& other) noexcept
 void Texture::Bind(unsigned int slot) const
 {
 	glActiveTexture(GL_TEXTURE0 + slot);
-	glBindTexture(GL_TEXTURE_2D, m_rendererID);
+	glBindTexture(GL_TEXTURE_2D, id_);
 }
 
 void Texture::Unbind() const

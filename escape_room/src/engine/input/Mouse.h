@@ -1,30 +1,27 @@
 #pragma once
 
-#include <vector>
-#include "MouseButtonObserver.h"
-#include "MousePositionObserver.h"
-#include "MouseScrollObserver.h"
 #include "engine/window/Window.h"
+#include "vendor/glm/glm.hpp"
+
+enum MouseButton
+{
+	MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT
+};
+
+enum MouseButtonStatus
+{
+	RELEASE_M,
+	PRESS_M
+};
 
 class Mouse
 {
-private:
-	std::vector<MouseButtonObserver*> m_ButtonObservers;
-	std::vector<MousePositionObserver*> m_PositionObservers;
-	std::vector<MouseScrollObserver*> m_ScrollObservers;
-protected:
-	void ClickNotify(int button, bool pressed);
-	void PositionNotify(GLdouble xpos, GLdouble ypos);
-	void ScrollNotify(GLdouble offset);
 public:
-	void AddMouseButtonObserver(MouseButtonObserver* observer);
-	void RemoveMouseButtonObserver(MouseButtonObserver* observer);
-
-	void AddMousePositionObserver(MousePositionObserver* observer);
-	void RemoveMousePositionObserver(MousePositionObserver* observer);
-
-	void AddMouseScrollObserver(MouseScrollObserver* observer);
-	void RemoveMouseScrollObserver(MouseScrollObserver* observer);
-
-	void ProcessInput(Window& window);
+	static glm::vec2 GetCursorPosition();
+	static MouseButtonStatus GetMouseButton(MouseButton button);
+	static void PollEvents(Window& w);
+private:
+	static double cursor_x_, cursor_y_;
+	static MouseButtonStatus left_, right_;
 };
+

@@ -7,34 +7,37 @@
 #include "engine/IndexBuffer.h"
 #include "engine/VertexBufferLayout.h"
 #include "engine/Shader.h"
-#include "vendor/glm/glm.hpp"
 #include "engine/Texture.h"
 #include "engine/Renderer.h"
+#include "vendor/glm/glm.hpp"
 
 struct Vertex
 {
-	glm::vec3 Position;
-	glm::vec3 Normal;
-	glm::vec2 TexCoords;
+	glm::vec3 position;
+	glm::vec3 normal;
+	glm::vec2 texture_coords;
+	glm::vec3 tangent;
 };
 
 class Mesh
 {
-private:
-	VertexArray m_VAO;
-	VertexBuffer m_VBO;
-	VertexBufferLayout m_layout;
-	IndexBuffer m_IBO;
 public:
-	std::vector<Vertex> m_vertices;
-	std::vector<GLuint> m_indices;
-	std::vector<Texture> m_textures;
-
 	Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures);
 	~Mesh() = default;
 
-	Mesh(Mesh&& other) noexcept = default;	// move constructor
-	Mesh& operator=(Mesh&& other) noexcept = default;	// move assignment
+	// move constructor
+	Mesh(Mesh&& other) noexcept = default;
+	// move assignment
+	Mesh& operator=(Mesh&& other) noexcept = default;
 
-	void Draw(Shader& shader);
+	void Draw(Shader& shader) const;
+
+private:
+	VertexArray vao_;
+	VertexBuffer vbo_;
+	VertexBufferLayout vb_layout_;
+	IndexBuffer ibo_;
+	std::vector<Vertex> vertices_;
+	std::vector<GLuint> indices_;
+	std::vector<Texture> textures_;
 };

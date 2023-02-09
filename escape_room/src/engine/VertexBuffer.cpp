@@ -2,42 +2,42 @@
 #include "GL/glew.h"
 
 VertexBuffer::VertexBuffer(const void* data, unsigned int size)
-    :m_size(size)
+    :size_(size)
 {
-    glGenBuffers(1, &m_rendererID);
-    glBindBuffer(GL_ARRAY_BUFFER, m_rendererID);
+    glGenBuffers(1, &id_);
+    glBindBuffer(GL_ARRAY_BUFFER, id_);
     glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
 }
 
 VertexBuffer::~VertexBuffer()
 {
-    glDeleteBuffers(1, &m_rendererID);
+    glDeleteBuffers(1, &id_);
 }
 
 VertexBuffer::VertexBuffer(VertexBuffer&& other) noexcept
-	:m_rendererID(other.m_rendererID),
-	m_size(other.m_size)
+	:id_(other.id_),
+	size_(other.size_)
 {
-	other.m_rendererID = 0;
-	other.m_size = 0;
+	other.id_ = 0;
+	other.size_ = 0;
 }
 
 VertexBuffer& VertexBuffer::operator=(VertexBuffer&& other) noexcept
 {
 	if (this != &other)
 	{
-		m_rendererID = other.m_rendererID;
-		m_size = other.m_size;
+		id_ = other.id_;
+		size_ = other.size_;
 
-		other.m_rendererID = 0;
-		other.m_size = 0;
+		other.id_ = 0;
+		other.size_ = 0;
 	}
 	return *this;
 }
 
 void VertexBuffer::Bind() const
 {
-    glBindBuffer(GL_ARRAY_BUFFER, m_rendererID);
+    glBindBuffer(GL_ARRAY_BUFFER, id_);
 }
 
 void VertexBuffer::Unbind() const

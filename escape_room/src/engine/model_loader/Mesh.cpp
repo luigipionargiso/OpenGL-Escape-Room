@@ -2,82 +2,51 @@
 #include <iostream>
 
 Mesh::Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures)
-	:m_vertices(std::move(vertices)),
-	m_indices(std::move(indices)),
-	m_textures(std::move(textures)),
-	m_VAO(VertexArray())
+    :vertices_(std::move(vertices)),
+    indices_(std::move(indices)),
+    textures_(std::move(textures)),
+    vao_(VertexArray())
 {
-	unsigned int vbo_size = m_vertices.size() * sizeof(float) * 8;
-	m_VBO = VertexBuffer(&m_vertices[0], vbo_size);
-	m_IBO = IndexBuffer(&m_indices[0], m_indices.size());
+    unsigned int vbo_size = vertices_.size() * sizeof(float) * 11; //magic number
+    vbo_ = VertexBuffer(&vertices_[0], vbo_size);
+    ibo_ = IndexBuffer(&indices_[0], indices_.size());
 
-	m_layout.Push<float>(3); //Position
-	m_layout.Push<float>(3); //Normal
-	m_layout.Push<float>(2); //TexCoord
+    vb_layout_.Push<float>(3); // position
+    vb_layout_.Push<float>(3); // normal
+    vb_layout_.Push<float>(2); // texture coordinates
+    vb_layout_.Push<float>(3); // tangent
 
-	m_VAO.AddBuffer(m_VBO, m_layout);
-	m_VAO.AddIndexBuffer(m_IBO);
+    vao_.AddBuffer(vbo_, vb_layout_);
+    vao_.AddIndexBuffer(ibo_);
 
-	for (Vertex& v : m_vertices)
-		std::cout << v.Position.x << " " << v.Position.y << " " << v.Position.z
-		<< " Normal: " << v.Normal.x << " " << v.Normal.y << " " << v.Normal.z << '\n';
-
-	m_VAO.Unbind();
+    vao_.Unbind();
 }
 
-void Mesh::Draw(Shader& shader)
+void Mesh::Draw(Shader& shader) const
 {
-	shader.Bind();
+    shader.Bind();
 
-	for (unsigned int i = 0; i < m_textures.size(); i++)
-	{
-		m_textures[i].Bind(i);
-		switch (m_textures[i].GetType())
-		{
-		case DIFFUSE:
-			shader.setUniform1i("u_Material.diffuse", i);
-			break;
-		case SPECULAR:
-			shader.setUniform1i("u_Material.specular", i);
-			break;
-		default:
-			break;
-		}
-	}
+    for (unsigned int i = 0; i < textures_.size(); i++)
+    {
+        textures_[i].Bind(i);
+        switch (textures_[i].GetType())
+        {
+        case DIFFUSE:
+            shader.setUniform1i("u_Material.diffuse", i);
+            break;
+        case SPECULAR:
+            shader.setUniform1i("u_Material.specular", i);
+            break;
+        case NORMAL:
+            shader.setUniform1i("u_Material.normal", i);
+            break;
+        default:
+            break;
+        }
+    }
 
-	Renderer::DrawIndexed(m_VAO, shader);
-	m_VAO.Unbind();
-	shader.Unbind();
+    Renderer::DrawIndexed(vao_, shader);
+
+    vao_.Unbind();
+    shader.Unbind();
 }
-
-//void Mesh::Draw(Shader& shader)
-//{
-//	shader.Bind();
-//
-//	unsigned int diffuseNr = 0;
-//	unsigned int specularNr = 0;
-//	for (unsigned int i = 0; i < m_textures.size(); i++)
-//	{
-//		m_textures[i].Bind(i);
-//		std::string number;
-//		switch (m_textures[i].GetType())
-//		{
-//		case DIFFUSE:
-//			number = std::to_string(diffuseNr++);
-//			shader.setUniform1i(("u_Material.diffuse" + number).c_str(), i);
-//			break;
-//		case SPECULAR:
-//			number = std::to_string(specularNr++);
-//			shader.setUniform1i(("u_Material.specular" + number).c_str(), i);
-//			break;
-//		default:
-//			break;
-//		}
-//	}
-// 	glActiveTexture(GL_TEXTURE0);
-//	glBindTexture(GL_TEXTURE_2D, 0);
-//
-//	Renderer::DrawIndexed(m_VAO, shader);
-//	m_VAO.Unbind();
-//	shader.Unbind();
-//}

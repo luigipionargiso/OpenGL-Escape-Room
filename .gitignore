@@ -4,11 +4,14 @@ bin
 
 #ignore visual studio files
 .vs
-*.sln
+*.sln*
 *.vcxproj*
 
 #ignore dependencies folder
 dependencies
+
+#ignore models folder
+models/
 
 #ignore text and log files
 *.log

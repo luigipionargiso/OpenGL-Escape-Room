@@ -1,5 +1,7 @@
 #include <iostream>
-
+#include <chrono>
+#include <thread>
+#include <stdlib.h>
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
 
@@ -7,12 +9,7 @@
 #include "Debug.h"
 #endif
 
-#include "engine/VertexArray.h"
-#include "engine/VertexBuffer.h"
-#include "engine/VertexBufferLayout.h"
-#include "engine/IndexBuffer.h"
 #include "engine/Shader.h"
-#include "engine/Texture.h"
 #include "engine/window/Window.h"
 #include "engine/input/Keyboard.h"
 #include "engine/input/Mouse.h"
@@ -22,18 +19,38 @@
 #include "vendor/glm/gtc/matrix_transform.hpp"
 
 #include "engine/model_loader/Model.h"
+#include <game/GameObject.h>
+#include "game/World.h"
 
-#include <chrono>
+#include "engine/physics/Physics.h"
+
+#include <windows.h>
+//#ifdef __cplusplus
+//extern "C" {
+//#endif
+//
+//    __declspec(dllexport) DWORD NvOptimusEnablement = 1;
+//    __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+//
+//#ifdef __cplusplus
+//}
+//#endif
 
 int main(void)
 {
-    Window window(800, 600, "Hello World");
-    window.MakeCurrent();
-    window.SetSwapInterval(1);
+    if (!glfwInit())
+    {
+        std::cerr << "Could not initialize GLFW" << '\n';
+        exit(EXIT_FAILURE);
+    }
 
-    if (glewInit() != GLEW_OK) {
-        std::cerr << "Cannot initialize GLEW" << std::endl;
-        return -1;
+    Window window(800, 600, "Hello World");
+    window.MakeContextCurrent();
+
+    if (glewInit() != GLEW_OK)
+    {
+        std::cerr << "Could not initialize GLEW" << '\n';
+        exit(EXIT_FAILURE);
     }
 
 #ifdef DEBUG
@@ -45,133 +62,103 @@ int main(void)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
-
     //glEnable(GL_CULL_FACE);
 
-    /*
-    float vertices[] = {
-        // positions          // normals           // texture coords
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
-
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
-    };
-
-    VertexArray va;
-    VertexBuffer vb(vertices, sizeof(vertices));
-    VertexBufferLayout layout;
-    layout.Push<float>(3);
-    layout.Push<float>(3);
-    layout.Push<float>(2);
-    va.AddBuffer(vb, layout);*/
+    Physics::Initialize();
 
     // shader
     Shader shader("res/shaders/basic.vert", "res/shaders/basic.frag");
     shader.Bind();
-    
-    // tranformation matrices
-    glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-    //model = glm::scale(model, glm::vec3(0.01f, 0.01f, 0.01f));
-    shader.setUniformMat4f("u_Model", model);
-
-    // texture
-    /*Texture diffuse("res/textures/_DSC3341-1.jpg", DIFFUSE);
-    Texture specular("res/textures/specular.jpg", SPECULAR);
-
-    diffuse.Bind(0);
-    shader.setUniform1i("u_Material.diffuse", 0);
-
-    specular.Bind(1);
-    shader.setUniform1i("u_Material.specular", 1);*/
+    Shader shader_w("res/shaders/basic_white.vert", "res/shaders/basic_white.frag");
+    shader_w.Bind();
 
     Camera camera(
-        glm::vec3(0, 0, 0.0),
-        glm::vec3(0, 0, -1.0),
-        glm::vec3(0, 1.0, 0)
+        glm::vec3(0.0f, 0.0f, 1.5f),
+        glm::vec3(-1.0f, 0.0f, 0.0f),
+        glm::vec3(0.0f, 0.0f, 1.0f),
+        45.0f,
+        16.0f/9.0f,
+        0.1f,
+        100.0f
     );
 
-    Keyboard key;
-    key.AddKeyObserver(&camera);
-
-    Mouse mouse;
-    mouse.AddMousePositionObserver(&camera);
-    mouse.AddMouseScrollObserver(&camera);
-
-    float y = 1.0f, off = 0.01f;
+    float y = 2.0f, off = 0.01f;
+    shader.Bind();
     shader.setUniform3fv("u_Light.ambient", glm::vec3(1.0, 1.0, 1.0));
     shader.setUniform3fv("u_Light.diffuse", glm::vec3(1.0, 1.0, 1.0));
     shader.setUniform3fv("u_Light.specular", glm::vec3(1.0, 1.0, 1.0));
 
-    auto start = std::chrono::high_resolution_clock::now();
-    Model backpack("res/cube/cube3.fbx");
+    /*auto start = std::chrono::high_resolution_clock::now();
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> duration = end - start;
-    std::cout << duration.count() << "s " << '\n';
+    std::cout << duration.count() << "s " << '\n';*/
+
+    World world;
+    world.Populate(shader);
+
+    /* game loop constants */
+    const auto MS_PER_FRAME = std::chrono::milliseconds(16);
+    const long MS_PER_UPDATE = 16;
+
+    /* how far the game clock is behind the real world */
+    long lag = 0;
+
+    auto previous = std::chrono::high_resolution_clock::now();
+
+    GameObject cross(Model("res/models/cross/cross.fbx"), nullptr, nullptr);
+    //cross.CorrectOrientation();
+    cross.SetScale(glm::vec3(0.05, 16.0 / 9.0 * 0.05, 1.0));
+    cross.SetShader(&shader_w);
 
     while (window.IsOpen())
     {
+        /* measure time between frames */
+        auto current = std::chrono::high_resolution_clock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(current - previous);
+        previous = current;
+        lag += (long)elapsed.count();
+
+        /* handle input */
+        Window::PollEvents();
+        Keyboard::PollEvents(window);
+        Mouse::PollEvents(window);
+
+        Physics::CastRay(camera.GetPosition(), camera.GetDirection());
+
+        /* update at fixed time steps */
+        while (lag >= MS_PER_UPDATE)
+        {
+            camera.Update();
+
+            if (y > 3.0f)
+                off = -0.04f;
+            else if (y < 0.0f)
+                off = 0.04f;
+            y += off;
+
+            lag -= MS_PER_UPDATE;
+        }
+
+        /* draw */
         Renderer::Clear();
-        key.ProcessInput(window);
-        mouse.ProcessInput(window);
+
+        camera.Draw(shader);
 
         shader.Bind();
-
-        glm::mat4 proj = camera.GetProjMatrix();
-        shader.setUniformMat4f("u_Projection", proj);
-        glm::mat4 view = camera.GetViewMatrix();
-        shader.setUniformMat4f("u_View", view);
-
-        if (y > 1.0f)
-            off = -0.01f;
-        else if (y < -1.0f)
-            off = 0.01f;
-        y += off;
         shader.setUniform3fv("u_Light.position", glm::vec3(2.0, y, 2.0));
-        shader.setUniform3fv("u_ViewPos", camera.GetPosition());
 
-        //Renderer::Draw(va, shader);
+        world.Draw(shader);
 
-        backpack.Draw(shader);
+        shader_w.Bind();
+        cross.Draw();
 
-        window.SwapFrameBuffer();
-        window.PollEvents();
+        /* limit frame rate to 60 FPS */
+        auto sleep_time = std::chrono::duration_cast<std::chrono::milliseconds>(
+            current + MS_PER_FRAME - std::chrono::high_resolution_clock::now()
+            );
+        std::this_thread::sleep_for(sleep_time);
+
+        window.SwapBuffers();
     }
 
     Window::CloseAllWindows();

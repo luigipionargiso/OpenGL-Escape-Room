@@ -1,20 +1,27 @@
-#include <iostream>
 #include "Model.h"
+#include <iostream>
 #include "vendor/glm/glm.hpp"
 
-Model::Model(std::string path)
+Model::Model(std::string filepath)
 {
     Assimp::Importer import;
-    const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate |
-                                                            aiProcess_CalcTangentSpace |
-                                                            aiProcess_GenNormals);
+    const aiScene* scene = import.ReadFile(filepath,
+        aiProcess_Triangulate |
+              aiProcess_GenBoundingBoxes |
+              aiProcess_CalcTangentSpace |
+              aiProcess_GenNormals
+    );
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
         std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << '\n';
         return;
     }
-    m_directory = path.substr(0, path.find_last_of('/'));
+    directory_ = filepath.substr(0, filepath.find_last_of('/'));
+
+    bounding_box_ = CalculateAABB(scene);
+
+    //std::cout << bounding_box_.min.x << bounding_box_.max.x << '\n';
 
     processNode(scene->mRootNode, scene);
 }
@@ -24,7 +31,7 @@ void Model::processNode(aiNode* node, const aiScene* scene)
     for (unsigned int i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        m_meshes.push_back(processMesh(mesh, scene));
+        meshes_.push_back(processMesh(mesh, scene));
     }
 
     for (unsigned int i = 0; i < node->mNumChildren; i++)
@@ -39,11 +46,11 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
     std::vector<unsigned int> indices;
     std::vector<Texture> textures;
 
-    /* Vertices */
+    // vertices
     for (unsigned int i = 0; i < mesh->mNumVertices; i++)
-        vertices.push_back(LoadVertices(mesh, i));
-    
-    /* Indices */
+        vertices.push_back(LoadVertex(mesh, i));
+
+    // indices
     for (unsigned int i = 0; i < mesh->mNumFaces; i++)
     {
         aiFace face = mesh->mFaces[i];
@@ -51,28 +58,34 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
             indices.push_back(face.mIndices[j]);
     }
     
-    /* Textures */
+    // textures
     if (mesh->mMaterialIndex >= 0)
     {
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
-        /* diffuse map */
+        // diffuse map
         if (material->GetTextureCount(aiTextureType_DIFFUSE) != 0)
             textures.push_back(
                 LoadTexture(material, aiTextureType_DIFFUSE, DIFFUSE)
             );
 
-        /* specular map */
+        // specular map
         if (material->GetTextureCount(aiTextureType_SPECULAR) != 0)
             textures.push_back(
                 LoadTexture(material, aiTextureType_SPECULAR, SPECULAR)
+            );
+
+        // normal map
+        if (material->GetTextureCount(aiTextureType_NORMALS) != 0)
+            textures.push_back(
+                LoadTexture(material, aiTextureType_NORMALS, NORMAL)
             );
     }
 
     return std::move(Mesh(vertices, indices, std::move(textures)));
 }
 
-Vertex Model::LoadVertices(aiMesh* mesh, unsigned int index)
+Vertex Model::LoadVertex(aiMesh* mesh, unsigned int index)
 {
     Vertex vertex{};
 
@@ -80,22 +93,27 @@ Vertex Model::LoadVertices(aiMesh* mesh, unsigned int index)
     vector.x = mesh->mVertices[index].x;
     vector.y = mesh->mVertices[index].y;
     vector.z = mesh->mVertices[index].z;
-    vertex.Position = vector;
+    vertex.position = vector;
 
     vector.x = mesh->mNormals[index].x;
     vector.y = mesh->mNormals[index].y;
     vector.z = mesh->mNormals[index].z;
-    vertex.Normal = vector;
+    vertex.normal = vector;
 
     if (mesh->mTextureCoords[0])
     {
         glm::vec2 vec{};
         vec.x = mesh->mTextureCoords[0][index].x;
         vec.y = mesh->mTextureCoords[0][index].y;
-        vertex.TexCoords = vec;
+        vertex.texture_coords = vec;
     }
     else
-        vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+        vertex.texture_coords = glm::vec2(0.0f, 0.0f);
+
+    vector.x = mesh->mTangents[index].x;
+    vector.y = mesh->mTangents[index].y;
+    vector.z = mesh->mTangents[index].z;
+    vertex.tangent = vector;
 
     return vertex;
 }
@@ -104,12 +122,38 @@ Texture Model::LoadTexture(aiMaterial* mat, aiTextureType ai_type, TextureType t
 {
     aiString name;
     mat->GetTexture(ai_type, 0, &name);
-    std::string path = m_directory + '/' + name.C_Str();
+    std::string path = directory_ + '/' + name.C_Str();
     return Texture(path, type);
 }
 
-void Model::Draw(Shader& shader)
+AABB Model::CalculateAABB(const aiScene* scene)
 {
-    for (unsigned int i = 0; i < m_meshes.size(); i++)
-        m_meshes[i].Draw(shader);
+    glm::vec3 max = glm::vec3(
+        (float)scene->mMeshes[0]->mAABB.mMax.x,
+        (float)scene->mMeshes[0]->mAABB.mMax.y,
+        (float)scene->mMeshes[0]->mAABB.mMax.z
+    );
+    glm::vec3 min = glm::vec3(
+        (float)scene->mMeshes[0]->mAABB.mMin.x,
+        (float)scene->mMeshes[0]->mAABB.mMin.y,
+        (float)scene->mMeshes[0]->mAABB.mMin.z
+    );
+
+    for (unsigned int i = 1; i < scene->mNumMeshes; i++)
+    {
+        max.x = std::max(max.x, scene->mMeshes[i]->mAABB.mMax.x);
+        max.y = std::max(max.y, scene->mMeshes[i]->mAABB.mMax.y);
+        max.z = std::max(max.z, scene->mMeshes[i]->mAABB.mMax.z);
+        min.x = std::min(min.x, scene->mMeshes[i]->mAABB.mMin.x);
+        min.y = std::min(min.y, scene->mMeshes[i]->mAABB.mMin.y);
+        min.z = std::min(min.z, scene->mMeshes[i]->mAABB.mMin.z);
+    }
+
+    return AABB{ min, max };
+}
+
+void Model::Draw(Shader& shader) const
+{
+    for (unsigned int i = 0; i < meshes_.size(); i++)
+        meshes_[i].Draw(shader);
 }

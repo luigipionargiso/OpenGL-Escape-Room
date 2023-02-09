@@ -1,18 +1,26 @@
 #pragma once
 
-#include <vector>
-#include "KeyObserver.h"
+#include <unordered_map>
 #include "engine/window/Window.h"
+
+enum Key
+{
+	KEY_FIRST,
+	KEY_W, KEY_A, KEY_S, KEY_D,
+	KEY_LAST
+};
+
+enum KeyStatus
+{
+	RELEASE,
+	PRESS
+};
 
 class Keyboard
 {
-private:
-	std::vector<KeyObserver*> observers;
-protected:
-	void KeyNotify(int key, bool pressed);
 public:
-	void AddKeyObserver(KeyObserver* observer);
-	void RemoveKeyObserver(KeyObserver* observer);
-
-	void ProcessInput(Window& window);
+	static KeyStatus GetKey(Key k);
+	static void PollEvents(Window& w);
+private:
+	static std::unordered_map<Key, KeyStatus> keys_;
 };

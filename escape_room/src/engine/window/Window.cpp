@@ -1,101 +1,91 @@
 #include "Window.h"
-#include "Callbacks.h"
 #include <iostream>
-#include <tuple>
 #include "vendor/stb_image/stb_image.h"
 
-GLdouble Window::deltaTime = 0.0;
-GLdouble Window::lastFrame = 0.0;
+const Window* Window::active_ = nullptr;
 
-Window::Window(GLuint width, GLuint height, std::string window_name)
-    :m_Window(nullptr), m_fullscreen(false)
+Window::Window(unsigned int width, unsigned int height, std::string name)
+    :glfw_pointer_(nullptr), is_fullscreen_(false)
 {
-    if (!glfwInit())
-    {
-        std::cerr << "Could not initialize GLFW" << '\n';
-        exit(EXIT_FAILURE);
-    }
-
-    #ifdef DEBUG
+#ifdef DEBUG
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-    #endif // DEBUG
+#endif
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    //glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);  //require OpenGL 4 or above
+    glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_SAMPLES, 4);
 
-    m_Window = glfwCreateWindow(width, height, window_name.c_str(), NULL, NULL);
-    if (!m_Window) {
-        std::cerr << "Could not create a window" << '\n';
+    glfw_pointer_ = glfwCreateWindow(width, height, name.c_str(), NULL, NULL);
+    if (!glfw_pointer_) {
+        std::cerr << "Could not create the window" << '\n';
         glfwTerminate();
         exit(EXIT_FAILURE);
     }
 
-    /* set some callbacks from Callbacks.h */
-    glfwSetFramebufferSizeCallback(m_Window, framebuffer_size_callback);
-    glfwSetScrollCallback(m_Window, scroll_callback);
+    glfwSetFramebufferSizeCallback(glfw_pointer_, FramebufferSizeCallback);
 }
 
-bool Window::GetKey(int key) const
+
+void Window::MakeContextCurrent() const
 {
-    return glfwGetKey(m_Window, key) == GLFW_PRESS;
+    glfwMakeContextCurrent(glfw_pointer_);
+    glfwSwapInterval(1);
+    active_ = this;
 }
 
-bool Window::GetMouseButton(int key) const
-{
-    return glfwGetMouseButton(m_Window, key) == GLFW_PRESS;
-}
 
-void Window::SetWindowIcon(std::string icon_filepath) const
+void Window::SetWindowIcon(std::string filepath) const
 {
     GLint width, height;
-    GLubyte* image = stbi_load(icon_filepath.c_str(), &width, &height, nullptr, 4);
+    auto image = stbi_load(filepath.c_str(), &width, &height, nullptr, 4);
     GLFWimage icon = GLFWimage{ width, height, image };
-    glfwSetWindowIcon(m_Window, 1, &icon);
+    glfwSetWindowIcon(glfw_pointer_, 1, &icon);
 }
 
 
 void Window::ToggleFullscreen()
 {
-    //TO DO
-   /* static GLint width, height, xpos, ypos;
-    if (m_fullscreen)
+    GLFWmonitor* monitor = glfwGetWindowMonitor(glfw_pointer_);
+    if (!monitor)
     {
-        glfwSetWindowMonitor(m_Window, NULL, xpos, ypos, width, height, GLFW_DONT_CARE);
+        // If there's no monitor, get the primary monitor handle
+        monitor = glfwGetPrimaryMonitor();
+    }
+
+    if (is_fullscreen_)
+    {
+        glfwSetWindowMonitor(glfw_pointer_, NULL, 0, 0, 800, 450, 0);
     }
     else
     {
-        glfwGetWindowSize(m_Window, &width, &height);
-        glfwGetWindowPos(m_Window, &xpos, &ypos);
-        glfwSetWindowMonitor(m_Window, glfwGetPrimaryMonitor(), xpos, ypos, width, height, GLFW_DONT_CARE);
-    }*/
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+        glfwSetWindowMonitor(
+            glfw_pointer_,
+            monitor,
+            0,
+            0,
+            mode->width,
+            mode->height,
+            mode->refreshRate
+        );
+    }
 }
 
-Point2D Window::GetCursorPosition() const
+
+glm::vec2 Window::GetFrameBufferSize() const
 {
-    GLdouble xpos, ypos;
-    glfwGetCursorPos(m_Window, &xpos, &ypos);
-    return Point2D{ xpos, ypos };
+    int width, height;
+    glfwGetFramebufferSize(glfw_pointer_, &width, &height);
+    return glm::vec2(width, height);
 }
 
-bool Window::IsHovered() const
+void Window::SwapBuffers()
 {
-    return glfwGetWindowAttrib(m_Window, GLFW_HOVERED);
+    glfwSwapBuffers(glfw_pointer_);
 }
 
-std::tuple<GLint, GLint> Window::GetFrameBufferSize() const
+void Window::FramebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
-    GLint width, height;
-    glfwGetFramebufferSize(m_Window, &width, &height);
-    return std::make_tuple(width, height);
-}
-
-void Window::SwapFrameBuffer()
-{
-    GLdouble currentFrame = GetTime();
-    Window::deltaTime = currentFrame - Window::lastFrame;
-    Window::lastFrame = currentFrame;
-
-    glfwSwapBuffers(m_Window);
+    glViewport(0, 0, width, (width * 9) / 16);
 }

@@ -6,7 +6,7 @@
 
 enum CollisionShape
 {
-	BOX, SPHERE, CYLINDER, CONVEX_HULL
+	BOX, SPHERE, CYLINDER, CONVEX_HULL, MESH
 };
 
 class Physics
@@ -14,7 +14,7 @@ class Physics
 public:
 	static void Initialize();
 	static void AddRigidBody(void* pointer, glm::vec3 position, glm::vec3 orientation, float mass, CollisionShape shape, glm::vec3 half_extents);
-	static void CastRay(glm::vec3 out_origin, glm::vec3 out_dir);
+	static void* CastRay(glm::vec3 out_origin, glm::vec3 out_dir);
 
 private:
 	static btDefaultCollisionConfiguration* collision_configuration_;

@@ -37,9 +37,9 @@ void Physics::AddRigidBody(void* pointer, glm::vec3 position, glm::vec3 orientat
 
     switch (shape)
     {
-    case BOX:
-        boxCollisionShape = new btBoxShape(btVector3(half_extents.y, half_extents.z, half_extents.x));
-        break;
+        case BOX:
+            boxCollisionShape = new btBoxShape(btVector3(half_extents.y, half_extents.z, half_extents.x));
+            break;
     }
 
     /* convert euler angles in quaternion */
@@ -67,7 +67,7 @@ void Physics::AddRigidBody(void* pointer, glm::vec3 position, glm::vec3 orientat
     dynamics_world_->addRigidBody(rigidBody);
 }
 
-void Physics::CastRay(glm::vec3 ray_origin, glm::vec3 ray_direction)
+void* Physics::CastRay(glm::vec3 ray_origin, glm::vec3 ray_direction)
 {
     glm::vec3 ray_end = ray_origin + glm::normalize(ray_direction) * 1000.0f;
 
@@ -82,6 +82,11 @@ void Physics::CastRay(glm::vec3 ray_origin, glm::vec3 ray_direction)
     );
 
     if (RayCallback.hasHit()) {
-        std::cout << "mesh " << (int)RayCallback.m_collisionObject->getUserPointer() << '\r';
+        return RayCallback.m_collisionObject->getUserPointer();
+        //std::cout << "mesh " << (int)RayCallback.m_collisionObject->getUserPointer() << '\r';
+    }
+    else
+    {
+        return nullptr;
     }
 }

@@ -1,7 +1,8 @@
 #pragma once
 
 #include "vendor/glm/glm.hpp"
-#include <engine/Shader.h>
+#include "engine/Shader.h"
+#include "CameraInputComponent.h"
 
 class Camera
 {
@@ -22,6 +23,7 @@ public:
 	void SetPosition(const glm::vec3 position);
 	void SetDirection(const glm::vec3 direction);
 	void SetUpVector(const glm::vec3 up);
+	void SetInputComponent(CameraInputComponent* input) { input_ = input; }
 
 	inline glm::vec3 GetPosition() const { return glm::vec3(position_.z, position_.x, position_.y); }
 	inline glm::vec3 GetDirection() const { return glm::vec3(direction_.z, direction_.x, direction_.y); }
@@ -37,6 +39,8 @@ private:
 	float speed_;
 	glm::mat4 view_matrix_;
 	glm::mat4 projection_matrix_;
+
+	CameraInputComponent* input_;
 
 	void UpdatePosition();
 	void UpdateRotation();

@@ -13,7 +13,8 @@
 #include "engine/window/Window.h"
 #include "engine/input/Keyboard.h"
 #include "engine/input/Mouse.h"
-#include "game/Camera.h"
+#include "game/camera/Camera.h"
+#include "game/camera/DefaultCameraInput.h"
 
 #include "vendor/glm/glm.hpp"
 #include "vendor/glm/gtc/matrix_transform.hpp"
@@ -81,6 +82,8 @@ int main(void)
         0.1f,
         100.0f
     );
+    DefaultCameraInput camera_input;
+    camera.SetInputComponent(&camera_input);
 
     float y = 2.0f, off = 0.01f;
     shader.Bind();
@@ -123,7 +126,20 @@ int main(void)
         Keyboard::PollEvents(window);
         Mouse::PollEvents(window);
 
-        Physics::CastRay(camera.GetPosition(), camera.GetDirection());
+        if (Mouse::GetMouseButton(MOUSE_BUTTON_LEFT) == PRESS)
+        {
+            GameObject* op = (GameObject*)Physics::CastRay(camera.GetPosition(), camera.GetDirection());
+            auto result = std::find_if(
+                world.objects_.begin(),
+                world.objects_.end(),
+                [op](const auto& mo) {return mo.second == op; });
+
+            //RETURN VARIABLE IF FOUND
+            if (result != world.objects_.end())
+                std::cout << result->first;
+
+        }
+
 
         /* update at fixed time steps */
         while (lag >= MS_PER_UPDATE)

@@ -6,7 +6,7 @@
 enum Key
 {
 	KEY_FIRST,
-	KEY_W, KEY_A, KEY_S, KEY_D,
+	KEY_W, KEY_A, KEY_S, KEY_D, KEY_Q,
 	KEY_LAST
 };
 

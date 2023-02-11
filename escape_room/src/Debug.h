@@ -14,54 +14,54 @@ void GLAPIENTRY errorOccurredGL(GLenum source,
     const GLchar* message,
     const void* userParam)
 {
-    cout << "\n <-- Message from OpenGL -->" << endl;
+    cerr << "\n <-- Message from OpenGL -->" << endl;
 
-    cout << "Message: " << message << endl;
+    cerr << "Message: " << message << endl;
 
-    cout << "Type: ";
+    cerr << "Type: ";
     switch (type) {
         case GL_DEBUG_TYPE_ERROR:
-            cout << "ERROR";
+            cerr << "ERROR";
             break;
     case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
-            cout << "DEPRECATED_BEHAVIOR";
+            cerr << "DEPRECATED_BEHAVIOR";
             break;
     case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-            cout << "UNDEFINED_BEHAVIOR";
+            cerr << "UNDEFINED_BEHAVIOR";
             break;
     case GL_DEBUG_TYPE_PORTABILITY:
-            cout << "PORTABILITY";
+            cerr << "PORTABILITY";
             break;
     case GL_DEBUG_TYPE_PERFORMANCE:
-            cout << "PERFORMANCE";
+            cerr << "PERFORMANCE";
             break;
     case GL_DEBUG_TYPE_OTHER:
-            cout << "OTHER";
+            cerr << "OTHER";
             break;
     }
-    cout << endl;
+    cerr << endl;
 
-    cout << "ID: " << id << endl;
+    cerr << "ID: " << id << endl;
 
-    cout << "Severity: ";
+    cerr << "Severity: ";
     switch (severity) {
         case GL_DEBUG_SEVERITY_LOW:
-            cout << "LOW";
+            cerr << "LOW";
             break;
         case GL_DEBUG_SEVERITY_MEDIUM:
-            cout << "MEDIUM";
+            cerr << "MEDIUM";
             break;
         case GL_DEBUG_SEVERITY_HIGH:
-            cout << "HIGH";
+            cerr << "HIGH";
             break;
         }
-    cout << endl;
-    cout << "<-- Message end -->\n" << endl;
+    cerr << endl;
+    cerr << "<-- Message end -->\n" << endl;
 }
 
 void errorOccurredGLFW(int error, const char* description)
 {
-    printf("GLFW Error %d: %s\n", error, description);
+    cerr << "GLFW Error " << error << ": " << description << '\n';
 }
 
 

@@ -1,6 +1,14 @@
 #pragma once
 
-#include "World.h"
+#include "camera/Camera.h"
+#include "game_object/GameObject.h"
+#include "lights/PointLight.h"
+#include "lights/AmbientLight.h"
+
+enum GameStatus
+{
+    WALKING, HOLD, EXAMINE
+};
 
 enum GamePhase
 {
@@ -10,16 +18,31 @@ enum GamePhase
 class Game
 {
 public:
-    static Game& getInstance();
+    static Game& GetInstance();
 
     Game(Game const&) = delete;
     void operator=(Game const&) = delete;
 
     void Update();
+    void Draw();
+
+    Camera& GetActiveCamera() { return camera_; }
+
+    GameStatus GetStatus() { return status_; }
 
 private:
-    Game() {}
+    Game();
+    void Populate();
+    void Pick(GameObject* picked_object);
+
     GamePhase phase_;
-	World world_;
+    GameStatus status_;
+    Camera camera_;
+    std::unordered_map<std::string, GameObject*> world_;
+    std::unordered_map<std::string, Shader*> shaders_;
+    std::unordered_map<std::string, PointLight*> point_lights_;
+    AmbientLight* ambient_light_;
+
+    GameObject* picked_object_;
 };
 

@@ -2,11 +2,15 @@
 #include "vendor/glm/glm.hpp"
 #include "engine/input/Keyboard.h"
 #include "engine/input/Mouse.h"
+#include "game/Game.h"
 
 void DefaultCameraInput::Update(Camera* camera)
 {
-	UpdatePosition(camera);
-	UpdateRotation(camera);
+    if (Game::GetInstance().GetStatus() != EXAMINE)
+    {
+	    UpdatePosition(camera);
+	    UpdateRotation(camera);
+    }
 }
 
 void DefaultCameraInput::UpdatePosition(Camera* camera)
@@ -15,7 +19,7 @@ void DefaultCameraInput::UpdatePosition(Camera* camera)
     glm::vec3 dir = camera->GetDirection();
     glm::vec3 up = camera->GetUpVector();
 
-    glm::vec3 front = { dir.x, dir.y, 0.0 };
+    glm::vec3 front = { dir.x, 0.0, dir.z };
     front = glm::normalize(front);
 
     if (Keyboard::GetKey(KEY_W) == PRESS)
@@ -47,6 +51,7 @@ void DefaultCameraInput::UpdateRotation(Camera* camera)
         last_x = mouse_pos.x;
         last_y = mouse_pos.y;
         first_time = false;
+        return;
     }
 
     double x_offset = mouse_pos.x - last_x;
@@ -63,9 +68,9 @@ void DefaultCameraInput::UpdateRotation(Camera* camera)
     else if (pitch < -89.0) pitch = -89.0;
 
     glm::vec3 dir = glm::vec3(0.0);
-    dir.x = (float)(sin(glm::radians(yaw)) * cos(glm::radians(pitch)));
-    dir.y = (float)(cos(glm::radians(yaw)) * cos(glm::radians(pitch)));
-    dir.z = (float)sin(glm::radians(pitch));
+    dir.x = (float)(cos(glm::radians(yaw)) * cos(glm::radians(pitch)));
+    dir.y = (float)sin(glm::radians(pitch));
+    dir.z = (float)(sin(glm::radians(yaw)) * cos(glm::radians(pitch)));
 
     camera->SetDirection(dir);
 }

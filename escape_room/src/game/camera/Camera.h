@@ -16,7 +16,9 @@ public:
 		float near,
 		float far
 	);
+	Camera() = default;
 	~Camera() = default;
+
 	void Update();
 	void Draw(Shader& shader);
 
@@ -25,24 +27,19 @@ public:
 	void SetUpVector(const glm::vec3 up);
 	void SetInputComponent(CameraInputComponent* input) { input_ = input; }
 
-	inline glm::vec3 GetPosition() const { return glm::vec3(position_.z, position_.x, position_.y); }
-	inline glm::vec3 GetDirection() const { return glm::vec3(direction_.z, direction_.x, direction_.y); }
-	inline glm::vec3 GetUpVector() const { return glm::vec3(up_.z, up_.x, up_.y); }
-	inline glm::mat4 GetViewMatrix() const { return view_matrix_; }
-	inline glm::mat4 GetProjectionMatrix() const { return projection_matrix_; }
+	inline glm::vec3 GetPosition() const { return position_; }
+	inline glm::vec3 GetDirection() const { return direction_; }
+	inline glm::vec3 GetUpVector() const { return up_; }
+	glm::mat4 GetViewMatrix();
 
 private:
 	glm::vec3 position_;
 	glm::vec3 direction_;
 	glm::vec3 up_;
 	float fov_, aspect_, near_, far_;
-	float speed_;
 	glm::mat4 view_matrix_;
 	glm::mat4 projection_matrix_;
 
 	CameraInputComponent* input_;
-
-	void UpdatePosition();
-	void UpdateRotation();
 };
 

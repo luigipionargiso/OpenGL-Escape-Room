@@ -9,7 +9,8 @@ Model::Model(std::string filepath)
         aiProcess_Triangulate |
               aiProcess_GenBoundingBoxes |
               aiProcess_CalcTangentSpace |
-              aiProcess_GenNormals
+              aiProcess_GenNormals |
+        aiProcess_JoinIdenticalVertices
     );
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)

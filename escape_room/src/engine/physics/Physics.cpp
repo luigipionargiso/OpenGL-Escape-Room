@@ -31,40 +31,50 @@ void Physics::Initialize()
     dynamics_world_->setGravity(btVector3(0, -9.81f, 0));
 }
 
-void Physics::AddRigidBody(void* pointer, glm::vec3 position, glm::vec3 orientation, float mass, CollisionShape shape, glm::vec3 half_extents)
+RigidBody* Physics::AddRigidBody(void* pointer, glm::vec3 position, glm::quat orientation, float mass, CollisionShape shape, glm::vec3 half_extents)
 {
-    btCollisionShape* boxCollisionShape = nullptr;
+    btCollisionShape* collision_shape = nullptr;
 
     switch (shape)
     {
         case BOX:
-            boxCollisionShape = new btBoxShape(btVector3(half_extents.y, half_extents.z, half_extents.x));
+            collision_shape = new btBoxShape(btVector3(half_extents.x, half_extents.y, half_extents.z));
+            break;
+        case CYLINDER:
+            collision_shape = new btCylinderShape(btVector3(half_extents.x, half_extents.y, half_extents.z));
             break;
     }
 
-    /* convert euler angles in quaternion */
-    auto quat_x = glm::angleAxis(orientation.y, glm::vec3(1.0, 0.0, 0.0));
-    auto quat_y = glm::angleAxis(orientation.z, glm::vec3(0.0, 1.0, 0.0));
-    auto quat_z = glm::angleAxis(orientation.x, glm::vec3(0.0, 0.0, 1.0));
-    auto quat = quat_x * quat_y * quat_z;
-
     btDefaultMotionState* motionstate = new btDefaultMotionState(
         btTransform(
-            btQuaternion(quat.x, quat.y, quat.z, quat.w),
-            btVector3(position.y, position.z, position.x)
+            btQuaternion(orientation.x, orientation.y, orientation.z, orientation.w),
+            btVector3(position.x, position.y, position.z)
         )
     );
 
     btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
         mass,               /* 0 -> static object */
         motionstate,
-        boxCollisionShape,
+        collision_shape,
         btVector3(0, 0, 0)  /* local inertia */
     );
 
     btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
     rigidBody->setUserPointer(pointer);
     dynamics_world_->addRigidBody(rigidBody);
+
+    return rigidBody;
+}
+
+void Physics::UpdateRigidBody(RigidBody* pointer, glm::vec3 position, glm::quat orientation)
+{
+    btDefaultMotionState* motion_state = new btDefaultMotionState(
+        btTransform(
+            btQuaternion(orientation.x, orientation.y, orientation.z, orientation.w),
+            btVector3(position.x, position.y, position.z)
+        )
+    );
+    pointer->setMotionState(motion_state);
 }
 
 void* Physics::CastRay(glm::vec3 ray_origin, glm::vec3 ray_direction)
@@ -72,21 +82,17 @@ void* Physics::CastRay(glm::vec3 ray_origin, glm::vec3 ray_direction)
     glm::vec3 ray_end = ray_origin + glm::normalize(ray_direction) * 1000.0f;
 
     btCollisionWorld::ClosestRayResultCallback RayCallback(
-        btVector3(ray_origin.y, ray_origin.z, ray_origin.x),
-        btVector3(ray_end.y, ray_end.z, ray_end.x)
+        btVector3(ray_origin.x, ray_origin.y, ray_origin.z),
+        btVector3(ray_end.x, ray_end.y, ray_end.z)
     );
     dynamics_world_->rayTest(
-        btVector3(ray_origin.y, ray_origin.z, ray_origin.x),
-        btVector3(ray_end.y, ray_end.z, ray_end.x),
+        btVector3(ray_origin.x, ray_origin.y, ray_origin.z),
+        btVector3(ray_end.x, ray_end.y, ray_end.z),
         RayCallback
     );
 
-    if (RayCallback.hasHit()) {
+    if (RayCallback.hasHit())
         return RayCallback.m_collisionObject->getUserPointer();
-        //std::cout << "mesh " << (int)RayCallback.m_collisionObject->getUserPointer() << '\r';
-    }
     else
-    {
         return nullptr;
-    }
 }

@@ -29,6 +29,7 @@ public:
 	void SetVisibility(bool is_visible) { invisible_ = !is_visible; }
 	void SetShader(Shader* shader);
 	void SetInputComponent(InputComponent* input) { input_ = input; }
+	void SetPhysicsComponent(PhysicsComponent* physics) { physics_ = physics; }
 
 
 	inline glm::vec3 GetPosition() const { return position_; }

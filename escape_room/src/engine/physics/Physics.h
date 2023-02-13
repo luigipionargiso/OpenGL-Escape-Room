@@ -8,16 +8,17 @@ typedef btRigidBody RigidBody;
 
 enum CollisionShape
 {
-	BOX, SPHERE, CYLINDER, CONVEX_HULL, MESH
+	BOX, SPHERE
 };
 
 class Physics
 {
 public:
 	static void Initialize();
-	static RigidBody* AddRigidBody(void* pointer, glm::vec3 position, glm::quat orientation, float mass, CollisionShape shape, glm::vec3 half_extents);
+	static RigidBody* AddRigidBody(void* user_pointer, glm::vec3 position, glm::quat orientation, float mass, CollisionShape shape, glm::vec3 half_extents);
 	static void UpdateRigidBody(RigidBody* pointer, glm::vec3 position, glm::quat orientation);
 	static void* CastRay(glm::vec3 out_origin, glm::vec3 out_dir);
+	static bool CheckCollision(RigidBody* rigid_body);
 
 private:
 	static btDefaultCollisionConfiguration* collision_configuration_;

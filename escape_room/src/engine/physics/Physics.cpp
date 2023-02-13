@@ -31,7 +31,7 @@ void Physics::Initialize()
     dynamics_world_->setGravity(btVector3(0, -9.81f, 0));
 }
 
-RigidBody* Physics::AddRigidBody(void* pointer, glm::vec3 position, glm::quat orientation, float mass, CollisionShape shape, glm::vec3 half_extents)
+RigidBody* Physics::AddRigidBody(void* user_pointer, glm::vec3 position, glm::quat orientation, float mass, CollisionShape shape, glm::vec3 half_extents)
 {
     btCollisionShape* collision_shape = nullptr;
 
@@ -40,8 +40,8 @@ RigidBody* Physics::AddRigidBody(void* pointer, glm::vec3 position, glm::quat or
         case BOX:
             collision_shape = new btBoxShape(btVector3(half_extents.x, half_extents.y, half_extents.z));
             break;
-        case CYLINDER:
-            collision_shape = new btCylinderShape(btVector3(half_extents.x, half_extents.y, half_extents.z));
+        case SPHERE:
+            collision_shape = new btSphereShape(half_extents.x);
             break;
     }
 
@@ -52,18 +52,22 @@ RigidBody* Physics::AddRigidBody(void* pointer, glm::vec3 position, glm::quat or
         )
     );
 
+    btVector3 local_inertia(0, 0, 0);
+    if (mass > 0 && collision_shape)
+        collision_shape->calculateLocalInertia(mass, local_inertia);
+
     btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
         mass,               /* 0 -> static object */
         motionstate,
         collision_shape,
-        btVector3(0, 0, 0)  /* local inertia */
+        local_inertia
     );
 
-    btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
-    rigidBody->setUserPointer(pointer);
-    dynamics_world_->addRigidBody(rigidBody);
+    btRigidBody* rigid_body = new btRigidBody(rigidBodyCI);
+    rigid_body->setUserPointer(user_pointer);
+    dynamics_world_->addRigidBody(rigid_body);
 
-    return rigidBody;
+    return rigid_body;
 }
 
 void Physics::UpdateRigidBody(RigidBody* pointer, glm::vec3 position, glm::quat orientation)
@@ -75,6 +79,7 @@ void Physics::UpdateRigidBody(RigidBody* pointer, glm::vec3 position, glm::quat 
         )
     );
     pointer->setMotionState(motion_state);
+    dynamics_world_->updateAabbs();
 }
 
 void* Physics::CastRay(glm::vec3 ray_origin, glm::vec3 ray_direction)
@@ -95,4 +100,30 @@ void* Physics::CastRay(glm::vec3 ray_origin, glm::vec3 ray_direction)
         return RayCallback.m_collisionObject->getUserPointer();
     else
         return nullptr;
+}
+
+bool Physics::CheckCollision(RigidBody* rigid_body)
+{
+    bool result = false;
+    dynamics_world_->performDiscreteCollisionDetection();
+    int numManifolds = dynamics_world_->getDispatcher()->getNumManifolds();
+
+    for (int i = 0; i < numManifolds; i++)
+    {
+        btPersistentManifold* contact_manifold = dynamics_world_->getDispatcher()->getManifoldByIndexInternal(i);
+        const btCollisionObject* b0 = contact_manifold->getBody0();
+        const btCollisionObject* b1 = contact_manifold->getBody1();
+
+        if (contact_manifold->getNumContacts() == 0)
+            contact_manifold->clearManifold();
+
+        if (b0 == rigid_body || b1 == rigid_body)
+        {
+            result = true;
+            break;
+        }
+    }
+
+    dynamics_world_->updateAabbs();
+    return result;
 }

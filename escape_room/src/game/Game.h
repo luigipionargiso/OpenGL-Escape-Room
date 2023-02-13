@@ -1,5 +1,6 @@
 #pragma once
 
+#include "game/World.h"
 #include "camera/Camera.h"
 #include "game_object/GameObject.h"
 #include "lights/PointLight.h"
@@ -23,25 +24,23 @@ public:
     Game(Game const&) = delete;
     void operator=(Game const&) = delete;
 
+    void Populate();
     void Update();
     void Draw();
 
     Camera& GetActiveCamera() { return camera_; }
-
     GameStatus GetStatus() { return status_; }
+    Shader* GetShader(std::string name);
 
 private:
     Game();
-    void Populate();
     void Pick(GameObject* picked_object);
 
+    World world_;
     GamePhase phase_;
     GameStatus status_;
     Camera camera_;
-    std::unordered_map<std::string, GameObject*> world_;
     std::unordered_map<std::string, Shader*> shaders_;
-    std::unordered_map<std::string, PointLight*> point_lights_;
-    AmbientLight* ambient_light_;
 
     GameObject* picked_object_;
 };

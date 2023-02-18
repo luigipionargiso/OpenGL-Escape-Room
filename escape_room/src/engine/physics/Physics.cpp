@@ -7,6 +7,10 @@ btBroadphaseInterface* Physics::overlapping_pair_cache_ = nullptr;
 btSequentialImpulseConstraintSolver* Physics::solver_ = nullptr;
 btDiscreteDynamicsWorld* Physics::dynamics_world_ = nullptr;
 
+std::unordered_map<const btCollisionObject*, bool> Physics::ray_visibility_ = std::unordered_map<const btCollisionObject*, bool>();
+std::unordered_map<const btCollisionObject*, bool> Physics::collision_visibility_ = std::unordered_map<const btCollisionObject*, bool>();
+
+
 void Physics::Initialize()
 {
     // collision configuration contains default setup for memory, collision setup. Advanced users can create their own configuration.
@@ -67,6 +71,9 @@ RigidBody* Physics::AddRigidBody(void* user_pointer, glm::vec3 position, glm::qu
     rigid_body->setUserPointer(user_pointer);
     dynamics_world_->addRigidBody(rigid_body);
 
+    ray_visibility_[rigid_body] = true;
+    collision_visibility_[rigid_body] = true;
+
     return rigid_body;
 }
 
@@ -80,6 +87,30 @@ void Physics::UpdateRigidBody(RigidBody* pointer, glm::vec3 position, glm::quat 
     );
     pointer->setMotionState(motion_state);
     dynamics_world_->updateAabbs();
+}
+
+void Physics::RemoveRigidBody(RigidBody* pointer)
+{
+    dynamics_world_->removeRigidBody(pointer);
+}
+
+void Physics::SetLinearVelocity(RigidBody* rigid_body, glm::vec3 linear_velocity)
+{
+    btVector3 velocity = btVector3(linear_velocity.x, linear_velocity.y, linear_velocity.z) * 2.0;
+    rigid_body->setLinearVelocity(velocity);
+}
+
+void Physics::SetRigidBodyAttribute(RigidBody* rigid_body, RigidBodyAttribute attribute, bool value)
+{
+    switch (attribute)
+    {
+    case RAY_VISIBILITY:
+        ray_visibility_[rigid_body] = value;
+        break;
+    case COLLISION_VISIBILITY:
+        collision_visibility_[rigid_body] = value;
+        break;
+    }
 }
 
 void* Physics::CastRay(glm::vec3 ray_origin, glm::vec3 ray_direction)
@@ -96,7 +127,7 @@ void* Physics::CastRay(glm::vec3 ray_origin, glm::vec3 ray_direction)
         RayCallback
     );
 
-    if (RayCallback.hasHit())
+    if (RayCallback.hasHit() && ray_visibility_[RayCallback.m_collisionObject])
         return RayCallback.m_collisionObject->getUserPointer();
     else
         return nullptr;
@@ -117,7 +148,12 @@ bool Physics::CheckCollision(RigidBody* rigid_body)
         if (contact_manifold->getNumContacts() == 0)
             contact_manifold->clearManifold();
 
-        if (b0 == rigid_body || b1 == rigid_body)
+        if (b0 == rigid_body && collision_visibility_[b1])
+        {
+            result = true;
+            break;
+        }
+        else if (b1 == rigid_body && collision_visibility_[b0])
         {
             result = true;
             break;
@@ -125,5 +161,18 @@ bool Physics::CheckCollision(RigidBody* rigid_body)
     }
 
     dynamics_world_->updateAabbs();
+    return result;
+}
+
+RigidBodyTranform Physics::Simulate(RigidBody* rigid_body)
+{
+    dynamics_world_->stepSimulation(1.f / 60.f, 1);
+    btTransform trans;
+    rigid_body->getMotionState()->getWorldTransform(trans);
+    RigidBodyTranform result
+    {
+        glm::vec3(float(trans.getOrigin().getX()), float(trans.getOrigin().getY()), float(trans.getOrigin().getZ())),
+        glm::quat((float)trans.getRotation().getW(), (float)trans.getRotation().getX(), (float)trans.getRotation().getY(), (float)trans.getRotation().getZ())
+    };
     return result;
 }

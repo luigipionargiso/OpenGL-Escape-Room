@@ -12,12 +12,13 @@ class GameObject
 {
 public:
 	GameObject(Model* model, InputComponent* input, PhysicsComponent* physics);
-	~GameObject() = default;
+	~GameObject();
 
 	GameObject(GameObject&& other) noexcept = default;
 	GameObject& operator=(GameObject&& other) noexcept = default;
 
 	void SetPosition(glm::vec3 world_space_position);
+	void SetRotation(glm::quat rotation_quaternion);
 	void SetRotationEulerYXZ(glm::vec3 euler_yxz);
 	void SetDirection(glm::vec3 dir);
 	void SetScale(glm::vec3 scale);
@@ -27,7 +28,6 @@ public:
 	//void Scale(glm::vec3 scale, glm::vec3 scale_center);
 
 	void SetVisibility(bool is_visible) { invisible_ = !is_visible; }
-	void SetShader(Shader* shader);
 	void SetInputComponent(InputComponent* input) { input_ = input; }
 	void SetPhysicsComponent(PhysicsComponent* physics) { physics_ = physics; }
 
@@ -37,13 +37,13 @@ public:
 	inline glm::vec3 GetScale() const { return scale_; }
 	//inline glm::vec3 GetRotationEulerXYZ() const { return glm::vec3(0.0f); }
 	inline glm::vec3 GetDimensions() const { return dimensions_; }
+	inline PhysicsComponent* GetPhysicsComponent() const { return physics_; }
 
 	void Update();
-	void Draw();
+	void Draw(Shader& shader);
 
 private:
 	Model* model_;
-	Shader* shader_;
 
 	glm::vec3 position_, scale_;
 	glm::quat rotation_;

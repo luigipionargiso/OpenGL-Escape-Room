@@ -5,16 +5,18 @@
 #include "game_object/GameObject.h"
 #include "lights/PointLight.h"
 #include "lights/AmbientLight.h"
+#include "HUDElement.h"
+#include "game_phase/GamePhase.h"
 
-enum GameStatus
+enum PlayerStatus
 {
     WALKING, HOLD, EXAMINE
 };
 
-enum GamePhase
-{
-    START_MENU, PLAYING, PAUSED, GAMEOVER
-};
+//enum GamePhase
+//{
+//    START, TORCH, PILLOW, BALL, LIGHTS_ON, BOOK, KEY, GAMEOVER
+//};
 
 class Game
 {
@@ -28,19 +30,23 @@ public:
     void Update();
     void Draw();
 
+    void ChangePhase(GamePhase* new_phase);
+    PlayerStatus& GetPlayerStatus() { return status_; }
+    void SetPlayerStatus(PlayerStatus status) { status_ = status; }
+
     Camera& GetActiveCamera() { return camera_; }
-    GameStatus GetStatus() { return status_; }
+    World& GetWorld() { return world_; }
     Shader* GetShader(std::string name);
 
 private:
     Game();
-    void Pick(GameObject* picked_object);
 
     World world_;
-    GamePhase phase_;
-    GameStatus status_;
+    GamePhase* current_phase_;
+    PlayerStatus status_;
     Camera camera_;
     std::unordered_map<std::string, Shader*> shaders_;
+    std::unordered_map<std::string, HUDElement*> hud_elements_;
 
     GameObject* picked_object_;
 };

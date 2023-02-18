@@ -14,9 +14,9 @@ public:
 
 	void Draw(Shader& shader)
 	{
-		shader.setUniform3fv("u_Light.diffuse", diffuse_color_);
-		shader.setUniform3fv("u_Light.specular", specular_color_);
-		shader.setUniform3fv("u_Light.position", position_);
+		shader.setUniform3fv("u_point.position", position_);
+		shader.setUniform3fv("u_point.diffuse_col", diffuse_color_);
+		shader.setUniform3fv("u_point.specular_col", specular_color_);
 	}
 };
 

@@ -47,15 +47,15 @@ void Window::SetWindowIcon(std::string filepath) const
 void Window::ToggleFullscreen()
 {
     GLFWmonitor* monitor = glfwGetWindowMonitor(glfw_pointer_);
+
+    /* if there's no monitor, get the primary monitor handle */
     if (!monitor)
-    {
-        // If there's no monitor, get the primary monitor handle
         monitor = glfwGetPrimaryMonitor();
-    }
 
     if (is_fullscreen_)
     {
-        glfwSetWindowMonitor(glfw_pointer_, NULL, 0, 0, 800, 450, 0);
+        glfwSetWindowMonitor(glfw_pointer_, NULL, 100, 100, 800, 450, 0);
+        is_fullscreen_ = false;
     }
     else
     {
@@ -69,6 +69,7 @@ void Window::ToggleFullscreen()
             mode->height,
             mode->refreshRate
         );
+        is_fullscreen_ = true;
     }
 }
 

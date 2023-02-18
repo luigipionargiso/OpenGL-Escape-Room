@@ -21,7 +21,7 @@ void Camera::Draw(Shader& shader)
     view_matrix_ = glm::lookAt(position_, direction_ + position_, up_);
     projection_matrix_ = glm::perspective(glm::radians(fov_), aspect_, near_, far_);
 
-    shader.setUniform3fv("u_ViewPos", position_);
+    shader.setUniform3fv("u_view_pos", position_);
     shader.setUniformMat4f("u_View", view_matrix_);
     shader.setUniformMat4f("u_Projection", projection_matrix_);
 }

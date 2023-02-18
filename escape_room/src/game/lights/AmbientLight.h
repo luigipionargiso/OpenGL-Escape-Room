@@ -13,7 +13,7 @@ public:
 
 	void Draw(Shader& shader)
 	{
-		shader.setUniform3fv("u_Light.ambient", color_);
+		shader.setUniform3fv("u_ambient", color_);
 	}
 };
 

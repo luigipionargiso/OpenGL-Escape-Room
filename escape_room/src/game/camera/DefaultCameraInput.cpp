@@ -6,7 +6,7 @@
 
 void DefaultCameraInput::Update(Camera* camera)
 {
-    if (Game::GetInstance().GetStatus() != EXAMINE)
+    if (Game::GetInstance().GetPlayerStatus() != EXAMINE)
     {
 	    UpdatePosition(camera);
 	    UpdateRotation(camera);
@@ -61,7 +61,7 @@ void DefaultCameraInput::UpdateRotation(Camera* camera)
 
     glm::vec2 window_size = Window::GetActiveWindow()->GetFrameBufferSize();
 
-    yaw += x_offset * 720.0 / window_size.x;
+    yaw += x_offset * 500.0 / window_size.x;
     pitch += y_offset * 180.0 / window_size.y;
 
     if (pitch > 89.0) pitch = 89.0;

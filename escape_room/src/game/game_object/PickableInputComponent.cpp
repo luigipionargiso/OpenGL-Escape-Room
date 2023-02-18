@@ -17,13 +17,13 @@ void PickableInputComponent::Update(GameObject& object)
 
     static glm::vec3 examine_rotation = glm::vec3(0.0f);
 
-    if (Game::GetInstance().GetStatus() == HOLD)
+    if (Game::GetInstance().GetPlayerStatus() == HOLD)
     {
         object.SetPosition(glm::vec3(inv_view_matrix * glm::vec4(0.5f, 0.0f, -1.0f, 1.0f)));
         object.SetDirection(glm::normalize(camera_dir));
         examine_rotation = glm::vec3(0.0f);
     }
-    else if (Game::GetInstance().GetStatus() == EXAMINE)
+    else if (Game::GetInstance().GetPlayerStatus() == EXAMINE)
     {
         object.SetPosition(glm::vec3(inv_view_matrix * glm::vec4(0.0f, 0.0f, -1.0f, 1.0f)));
 

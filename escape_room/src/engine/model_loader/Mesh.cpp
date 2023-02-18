@@ -32,13 +32,13 @@ void Mesh::Draw(Shader& shader) const
         switch (textures_[i].GetType())
         {
         case DIFFUSE:
-            shader.setUniform1i("u_Material.diffuse", i);
+            shader.setUniform1i("u_material.diffuse", i);
             break;
         case SPECULAR:
-            shader.setUniform1i("u_Material.specular", i);
+            shader.setUniform1i("u_material.specular", i);
             break;
         case NORMAL:
-            shader.setUniform1i("u_Material.normal", i);
+            shader.setUniform1i("u_material.normal", i);
             break;
         default:
             break;

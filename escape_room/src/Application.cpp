@@ -35,9 +35,9 @@ int main(void)
         exit(EXIT_FAILURE);
     }
 
-    Window window(800, 600, "Hello World");
+    Window window(800, 450, "Escape Room");
     window.MakeContextCurrent();
-    glViewport(0, 0, window.GetFrameBufferSize().x, (window.GetFrameBufferSize().x * 9) / 16);
+    glViewport(0, 0, (int)window.GetFrameBufferSize().x, (int)(window.GetFrameBufferSize().x * 9) / 16);
 
     if (glewInit() != GLEW_OK)
     {
@@ -57,7 +57,7 @@ int main(void)
     //glEnable(GL_CULL_FACE);
 
     Physics::Initialize();
-    Text::Init(new Texture("res/textures/text/ExportedFont.bmp", IMAGE), new Shader("res/shaders/text.vert", "res/shaders/text.frag"));
+    Text::Init(new Texture("res/textures/text/ExportedFont2.bmp", IMAGE), new Shader("res/shaders/text.vert", "res/shaders/text.frag"));
     
     Game& game = Game::GetInstance();
     game.Populate();
@@ -70,6 +70,7 @@ int main(void)
     long lag = 0;
 
     auto previous = std::chrono::high_resolution_clock::now();
+    bool f_was_released = true;
 
     while (window.IsOpen())
     {
@@ -83,6 +84,16 @@ int main(void)
         Window::PollEvents();
         Keyboard::PollEvents(window);
         Mouse::PollEvents(window);
+
+        /* toggle fullscreen */
+        if (Keyboard::GetKey(KEY_F) == RELEASE) f_was_released = true;
+        if (Keyboard::GetKey(KEY_F) == PRESS && f_was_released)
+        {
+            window.ToggleFullscreen();
+            f_was_released = false;
+        }
+
+        if (Keyboard::GetKey(KEY_ESC)) break;
 
         /* update at fixed time steps */
         while (lag >= MS_PER_UPDATE)

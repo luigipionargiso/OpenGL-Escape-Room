@@ -9,7 +9,7 @@ public:
 	void Update(Camera* camera) override;
 
 private:
-	float speed_ = 0.05f;
+	float speed_ = 0.02f;
 	void UpdatePosition(Camera* camera);
 	void UpdateRotation(Camera* camera);
 };

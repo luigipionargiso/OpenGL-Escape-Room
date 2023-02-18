@@ -8,8 +8,8 @@
 #include "game_object/PickableInputComponent.h"
 #include "vendor/glm/gtc/constants.hpp"
 #include "game/game_object/PlayerPhysicsComponent.h"
-
-RigidBody* playerr;
+#include "game_object/PickablePhysicsComponent.h"
+#include "game_phase/StartPhase.h"
 
 Game& Game::GetInstance()
 {
@@ -30,7 +30,7 @@ Game::Game()
 {
     /* initialize shaders */
     shaders_["basic"] = new Shader("res/shaders/basic.vert", "res/shaders/basic.frag");
-    shaders_["basic_white"] = new Shader("res/shaders/basic_white.vert", "res/shaders/basic_white.frag");
+    shaders_["hud"] = new Shader("res/shaders/hud.vert", "res/shaders/hud.frag");
 
     world_ = World();
 
@@ -45,8 +45,10 @@ Game::Game()
     );
     camera_.SetInputComponent(new DefaultCameraInput());
 
-    phase_ = PLAYING;
+    current_phase_ = new StartPhase();
     status_ = WALKING;
+
+    hud_elements_["hud"] = new HUDElement(new Texture("res/textures/hud.png", IMAGE), shaders_["hud"], -0.99f);
 }
 
 void Game::Populate()
@@ -54,66 +56,22 @@ void Game::Populate()
     world_.Populate();
 }
 
-void Game::Pick(GameObject* picked_object)
-{
-    picked_object_ = picked_object;
-    picked_object->SetPosition(camera_.GetPosition() + camera_.GetDirection());
-}
-
 void Game::Update()
 {
-    if (Mouse::GetMouseButton(MOUSE_BUTTON_LEFT) == PRESS_M)
-    {
-        GameObject* op = (GameObject*)Physics::CastRay(camera_.GetPosition(), camera_.GetDirection());
-        auto result = std::find_if(
-            world_.objects_.begin(),
-            world_.objects_.end(),
-            [op](const auto& mo) {return mo.second == op; });
-
-        //RETURN VARIABLE IF FOUND
-        if (result != world_.objects_.end()) {
-            std::cout << result->first;
-            op->SetInputComponent((InputComponent*)new PickableInputComponent());
-            status_ = HOLD;
-        }
-
-    }
-
-    /* switch between hold and examine */
-    static bool var = false;
-    if (status_ == HOLD && Keyboard::GetKey(KEY_Q) == PRESS) {
-        status_ = EXAMINE;
-    }
-    else if (status_ == EXAMINE && Keyboard::GetKey(KEY_Q) == RELEASE) {
-        var = true;
-    }
-    else if (status_ == EXAMINE && Keyboard::GetKey(KEY_Q) == PRESS && var) {
-        status_ = HOLD;
-    }
-
-    camera_.Update();
-
-    for (auto& obj : world_.objects_)
-        obj.second->Update();
-
-    /* update lights */
-    static float y = 0.0f, off = 0.04f;
-
-    if (y > 3.0f)
-        off = -0.04f;
-    else if (y < 0.0f)
-        off = 0.04f;
-    y += off;
-    glm::vec3 pos = world_.point_lights_["point"]->position_;
-    world_.point_lights_["point"]->position_ = glm::vec3(pos.x, y, pos.z);
+    current_phase_->HandleInput();
+    current_phase_->Update();
 }
 
 void Game::Draw()
 {
-    camera_.Draw(*shaders_["basic"]);
-    for (auto& obj : world_.objects_)
-        obj.second->Draw();
+    current_phase_->Draw();
 
-    world_.ambient_light_->Draw(*shaders_["basic"]);
-    world_.point_lights_["point"]->Draw(*shaders_["basic"]);
+    /* draw hud */
+    hud_elements_["hud"]->Render();
+}
+
+void Game::ChangePhase(GamePhase* new_phase)
+{
+    delete current_phase_;
+    current_phase_ = new_phase;
 }

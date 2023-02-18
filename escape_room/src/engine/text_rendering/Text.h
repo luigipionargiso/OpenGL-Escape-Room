@@ -7,7 +7,7 @@
 class Text
 {
 public:
-	static void Init(Texture* bitmap_texture, Shader* shader_);
+	static void Init(Texture* bitmap_texture, Shader* shader);
 	static void Render(const char* text, float x, float y, float size);
 	static void Clear();
 

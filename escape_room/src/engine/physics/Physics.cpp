@@ -110,6 +110,11 @@ void Physics::SetRigidBodyAttribute(RigidBody* rigid_body, RigidBodyAttribute at
     case COLLISION_VISIBILITY:
         collision_visibility_[rigid_body] = value;
         break;
+    case IS_KINEMATIC:
+        rigid_body->setCollisionFlags(rigid_body->getCollisionFlags() |
+        btCollisionObject::CF_KINEMATIC_OBJECT);
+        rigid_body->setActivationState(DISABLE_DEACTIVATION);
+        break;
     }
 }
 
@@ -166,7 +171,7 @@ bool Physics::CheckCollision(RigidBody* rigid_body)
 
 RigidBodyTranform Physics::Simulate(RigidBody* rigid_body)
 {
-    dynamics_world_->stepSimulation(1.f / 60.f, 1);
+    dynamics_world_->stepSimulation(1.f / 120.f, 1, 1.0f/120.0f);
     btTransform trans;
     rigid_body->getMotionState()->getWorldTransform(trans);
     RigidBodyTranform result

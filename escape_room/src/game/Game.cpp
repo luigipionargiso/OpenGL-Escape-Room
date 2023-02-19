@@ -33,9 +33,10 @@ Game::Game()
     shaders_["hud"] = new Shader("res/shaders/hud.vert", "res/shaders/hud.frag");
 
     world_ = World();
+    world_.Populate();
 
     camera_ = Camera(
-        glm::vec3(0.0f, 1.5f, 0.0f),
+        glm::vec3(-0.6f, 1.5f, 2.8f),
         glm::vec3(0.0f, 0.0f, -1.0f),
         glm::vec3(0.0f, 1.0f, 0.0f),
         45.0f,
@@ -49,11 +50,6 @@ Game::Game()
     status_ = WALKING;
 
     hud_elements_["hud"] = new HUDElement(new Texture("res/textures/hud.png", IMAGE), shaders_["hud"], -0.99f);
-}
-
-void Game::Populate()
-{
-    world_.Populate();
 }
 
 void Game::Update()

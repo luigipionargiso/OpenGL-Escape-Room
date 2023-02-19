@@ -15,6 +15,9 @@ void DefaultCameraInput::Update(Camera* camera)
 
 void DefaultCameraInput::UpdatePosition(Camera* camera)
 {
+    static float t = 0.0f;
+    static float initial_pos_y = 1.5f;
+
     glm::vec3 pos = camera->GetPosition();
     glm::vec3 dir = camera->GetDirection();
     glm::vec3 up = camera->GetUpVector();
@@ -33,6 +36,13 @@ void DefaultCameraInput::UpdatePosition(Camera* camera)
 
     if (Keyboard::GetKey(KEY_D) == PRESS)
         pos += glm::normalize(glm::cross(front, up)) * speed_;
+
+    /* swing up and down */
+    if (camera->GetPosition() != pos)
+    {
+        pos.y = initial_pos_y + 0.1f * abs(sinf(t));
+        t += 0.1f;
+    }
 
     camera->SetPosition(pos);
 }

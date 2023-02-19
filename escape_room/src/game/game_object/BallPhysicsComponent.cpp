@@ -1,28 +1,28 @@
-#include "PickablePhysicsComponent.h"
+#include "BallPhysicsComponent.h"
 #include "GameObject.h"
 
-#define MAX_TICKS 150
+#define MAX_TICKS 200
 
-PickablePhysicsComponent::PickablePhysicsComponent(GameObject& object, float mass)
+BallPhysicsComponent::BallPhysicsComponent(GameObject& object, float mass)
 {
 	rigid_body_ = Physics::AddRigidBody(
 		&object,
 		object.GetPosition(),
 		object.GetRotation(),
 		mass,
-		BOX,
+		SPHERE,
 		object.GetDimensions() / 2.0f
 	);
 	Physics::SetRigidBodyAttribute(rigid_body_, COLLISION_VISIBILITY, false);
 	sim_ticks_ = MAX_TICKS;
 }
 
-PickablePhysicsComponent::~PickablePhysicsComponent()
+BallPhysicsComponent::~BallPhysicsComponent()
 {
 	Physics::RemoveRigidBody(rigid_body_);
 }
 
-void PickablePhysicsComponent::Update(GameObject& object)
+void BallPhysicsComponent::Update(GameObject& object)
 {
 	if (sim_ticks_ < MAX_TICKS)
 	{
@@ -37,13 +37,13 @@ void PickablePhysicsComponent::Update(GameObject& object)
 	}
 }
 
-void PickablePhysicsComponent::RestartSimulation(GameObject& object)
+void BallPhysicsComponent::RestartSimulation(GameObject& object)
 {
 	Physics::UpdateRigidBody(rigid_body_, object.GetPosition(), object.GetRotation());
 	sim_ticks_ = 0;
 }
 
-void PickablePhysicsComponent::SetLinearVelocity(glm::vec3 linear_velocity)
+void BallPhysicsComponent::SetLinearVelocity(glm::vec3 linear_velocity)
 {
 	Physics::SetLinearVelocity(rigid_body_, linear_velocity);
 }

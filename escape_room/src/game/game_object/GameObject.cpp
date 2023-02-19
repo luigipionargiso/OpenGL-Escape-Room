@@ -1,8 +1,8 @@
 #include "GameObject.h"
 #include <vendor/glm/gtx/euler_angles.hpp>
 
-GameObject::GameObject(Model* model, InputComponent* input, PhysicsComponent* physics)
-    :model_(model), input_(input), physics_(physics)
+GameObject::GameObject(Model* model)
+    :model_(model), input_(nullptr), physics_(nullptr)
 {
     position_ = glm::vec3(0.0);
     rotation_ = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);

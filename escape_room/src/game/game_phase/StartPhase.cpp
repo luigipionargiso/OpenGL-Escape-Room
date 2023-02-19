@@ -4,6 +4,7 @@
 #include "engine/physics/Physics.h"
 #include "game/Game.h"
 #include "game/game_object/GameObject.h"
+#include "game/GameUtils.h"
 
 StartPhase::~StartPhase()
 {
@@ -41,7 +42,7 @@ void StartPhase::HandleInput()
                 [selected](const auto& value) {return value.second == selected; }
             );
 
-            if (result != world.objects_.end())
+            if (result != world.objects_.end() && CheckDistanceLimit(*result->second, *world.objects_["player"]))
             {
                 if (result->first.compare("torcia") == 0)
                 {
@@ -51,6 +52,10 @@ void StartPhase::HandleInput()
                 else if (result->first.compare("porta") == 0)
                 {
                     current_dialog_ = new Dialog("The door is locked.");
+                }
+                else if (result->first.compare("finestra") == 0)
+                {
+                    current_dialog_ = new Dialog("The outside world seems to have disappeared.");
                 }
             }
         }

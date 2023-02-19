@@ -3,11 +3,11 @@
 #include "GamePhase.h"
 #include "game/Dialog.h"
 
-class TorchPhase : public GamePhase
+class LightsOnPhase : public GamePhase
 {
 public:
-    TorchPhase();
-    ~TorchPhase();
+    LightsOnPhase();
+    ~LightsOnPhase();
     void HandleInput();
     void Update();
     void Draw();

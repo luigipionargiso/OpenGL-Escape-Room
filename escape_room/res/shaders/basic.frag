@@ -84,11 +84,11 @@ vec3 CalculateSpotLight(vec3 normal)
 					(texture(u_material.diffuse, v_tex_coord)).rgb; 
 
 		/* specular */
-		float specular_strength = 0.4;
+		float specular_strength = 0.2;
 		vec3 view_dir = normalize(u_view_pos - v_frag_pos);
 		vec3 reflect_dir = reflect(light_to_frag, normal);
 		vec3 specular = specular_strength *
-						pow(max(dot(view_dir, reflect_dir), 0.0), 32 * (texture(u_material.specular, v_tex_coord)).r) *
+						pow(max(dot(view_dir, reflect_dir), 0.0), 32 * (1.0 - texture(u_material.specular, v_tex_coord)).r) *
 						u_spot.specular_col;
 
 		vec3 spotlight = (diffuse + specular) * attenuation;
@@ -114,11 +114,11 @@ vec3 CalculatePointLight(vec3 normal)
 					(texture(u_material.diffuse, v_tex_coord)).rgb; 
 
 	/* specular */
-	float specular_strength = 0.4;
+	float specular_strength = 0.2;
 	vec3 view_dir = normalize(u_view_pos - v_frag_pos);
 	vec3 reflect_dir = reflect(-light_dir, normal);
 	vec3 specular = specular_strength *
-					pow(max(dot(view_dir, reflect_dir), 0.0), 32 * (texture(u_material.specular, v_tex_coord)).r) *
+					pow(max(dot(view_dir, reflect_dir), 0.0), 32 * (1.0 - texture(u_material.specular, v_tex_coord)).r) *
 					u_point.specular_col;
 
 	return (diffuse + specular) * attenuation;

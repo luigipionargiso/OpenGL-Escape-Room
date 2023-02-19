@@ -3,8 +3,6 @@
 #include "game/World.h"
 #include "camera/Camera.h"
 #include "game_object/GameObject.h"
-#include "lights/PointLight.h"
-#include "lights/AmbientLight.h"
 #include "HUDElement.h"
 #include "game_phase/GamePhase.h"
 
@@ -12,11 +10,6 @@ enum PlayerStatus
 {
     WALKING, HOLD, EXAMINE
 };
-
-//enum GamePhase
-//{
-//    START, TORCH, PILLOW, BALL, LIGHTS_ON, BOOK, KEY, GAMEOVER
-//};
 
 class Game
 {
@@ -26,13 +19,15 @@ public:
     Game(Game const&) = delete;
     void operator=(Game const&) = delete;
 
-    void Populate();
     void Update();
     void Draw();
 
     void ChangePhase(GamePhase* new_phase);
     PlayerStatus& GetPlayerStatus() { return status_; }
     void SetPlayerStatus(PlayerStatus status) { status_ = status; }
+
+    GameObject* GetPickedObject() { return picked_object_; }
+    void SetPickedObject(GameObject* obj) { picked_object_ = obj; }
 
     Camera& GetActiveCamera() { return camera_; }
     World& GetWorld() { return world_; }

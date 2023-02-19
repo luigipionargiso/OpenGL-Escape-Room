@@ -1,37 +1,38 @@
-#include "TorchPhase.h"
+#include "LightsOnPhase.h"
 #include "engine/input/Mouse.h"
 #include "engine/input/Keyboard.h"
-#include "engine/physics/Physics.h"
-#include "game/Game.h"
-#include "game/game_object/GameObject.h"
-#include "game/game_object/PickableInputComponent.h"
-#include "PillowPhase.h"
 #include "game/GameUtils.h"
+#include "game/game_object/PickableInputComponent.h"
+#include "game/game_object/PickablePhysicsComponent.h"
+#include "KeyPhase.h"
 
-TorchPhase::TorchPhase()
+LightsOnPhase::LightsOnPhase()
 {
-	Game& game = Game::GetInstance();
+    Game& game = Game::GetInstance();
+    World& world = game.GetWorld();
 
-    /* lower ambient light */
-    game.GetWorld().ambient_light_->color_ = glm::vec3(0.1f);
+    world.objects_["libro_zelda"] = new GameObject(new Model("res/models/libri/libro_zelda.fbx"));
+    world.objects_["libro_zelda"]->SetPosition(glm::vec3(1.74f, 1.2f, 2.78f));
+    world.objects_["libro_zelda"]->SetRotationEulerYXZ(glm::vec3(0.0f, glm::radians(90.0f), 0.0f));
+    world.objects_["libro_zelda"]->SetDimensions(glm::vec3(0.260681f, 0.0439f, 0.185234f));
+    world.objects_["libro_zelda"]->SetPhysicsComponent(new PickablePhysicsComponent(*world.objects_["libro_zelda"], 1.0f));
 
-	/* delete the torch */
-	delete(game.GetWorld().objects_["torcia"]);
-	game.GetWorld().objects_.erase("torcia");
+    world.objects_["donut"]->SetPhysicsComponent(new PickablePhysicsComponent(*world.objects_["donut"], 2.0f));
 
-    /* replace the wall */
-    game.GetWorld().objects_["parete_frontale"]->SetVisibility(false);
-    game.GetWorld().objects_["parete_frontale_VAR"]->SetVisibility(true);
-
-    current_dialog_ = new Dialog("You have obtained a torch!");
+    world.ambient_light_->color_ = glm::vec3(0.2f);
+    world.spot_light_->diffuse_color_ = glm::vec3(0.0f);
+    world.spot_light_->specular_color_ = glm::vec3(0.0f);
+    world.point_light_->diffuse_color_ = glm::vec3(1.0f);
+    world.point_light_->specular_color_ = glm::vec3(1.0f);
+    current_dialog_ = new Dialog("The light turned on!");
 }
 
-TorchPhase::~TorchPhase()
+LightsOnPhase::~LightsOnPhase()
 {
     delete(current_dialog_);
 }
 
-void TorchPhase::HandleInput()
+void LightsOnPhase::HandleInput()
 {
     static Game& game = Game::GetInstance();
     static World& world = game.GetWorld();
@@ -62,15 +63,14 @@ void TorchPhase::HandleInput()
             auto result = std::find_if(
                 world.objects_.begin(),
                 world.objects_.end(),
-                [selected](const auto& value) {return value.second == selected; }
+                [selected](const auto& value) { return value.second == selected; }
             );
 
             if (result != world.objects_.end() && CheckDistanceLimit(*result->second, *world.objects_["player"]))
             {
-                if (result->first.compare("cuscino") == 0)
+                if (result->first.compare("donut") == 0 && game.GetPlayerStatus() == WALKING)
                 {
-                    game.ChangePhase(new PillowPhase());
-                    return;
+                    game.ChangePhase(new KeyPhase());
                 }
                 else if (result->first.compare("porta") == 0)
                 {
@@ -79,6 +79,12 @@ void TorchPhase::HandleInput()
                 else if (result->first.compare("finestra") == 0)
                 {
                     current_dialog_ = new Dialog("The outside world seems to have disappeared.");
+                }
+                else if (result->first.compare("ball") == 0 && game.GetPlayerStatus() == WALKING)
+                {
+                    game.SetPlayerStatus(HOLD);
+                    world.objects_["ball"]->SetInputComponent(new PickableInputComponent());
+                    game.SetPickedObject(world.objects_["ball"]);
                 }
                 else if (result->first.compare("libro_zelda") == 0 && game.GetPlayerStatus() == WALKING)
                 {
@@ -109,8 +115,8 @@ void TorchPhase::HandleInput()
     {
         /* throw object */
         game.SetPlayerStatus(WALKING);
-        game.GetPickedObject()->SetPosition(game.GetActiveCamera().GetPosition() + game.GetActiveCamera().GetDirection());
         game.GetPickedObject()->SetInputComponent(nullptr);
+        game.GetPickedObject()->SetPosition(game.GetActiveCamera().GetPosition() + game.GetActiveCamera().GetDirection());
         game.GetPickedObject()->GetPhysicsComponent()->SetLinearVelocity(
             game.GetActiveCamera().GetDirection() * 3.0f
         );
@@ -119,20 +125,17 @@ void TorchPhase::HandleInput()
     }
 }
 
-void TorchPhase::Update()
+void LightsOnPhase::Update()
 {
-	Game& game = Game::GetInstance();
+    Game& game = Game::GetInstance();
 
-	game.GetActiveCamera().Update();
+    game.GetActiveCamera().Update();
 
-	for (auto& obj : game.GetWorld().objects_)
-		obj.second->Update();
-
-	game.GetWorld().spot_light_->position_ = game.GetActiveCamera().GetPosition();
-	game.GetWorld().spot_light_->direction_ = glm::normalize(game.GetActiveCamera().GetDirection());
+    for (auto& obj : game.GetWorld().objects_)
+        obj.second->Update();
 }
 
-void TorchPhase::Draw()
+void LightsOnPhase::Draw()
 {
     Game& game = Game::GetInstance();
     Shader& shader = *game.GetShader("basic");

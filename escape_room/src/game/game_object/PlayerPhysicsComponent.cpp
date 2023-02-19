@@ -13,7 +13,7 @@ PlayerPhysicsComponent::PlayerPhysicsComponent(GameObject& player)
         player.GetDimensions() / 2.0f
     );
     Physics::SetRigidBodyAttribute(rigid_body_, RAY_VISIBILITY, false);
-
+    Physics::SetRigidBodyAttribute(rigid_body_, IS_KINEMATIC, true);
     last_positions_[0] = player.GetPosition();
     last_positions_[1] = player.GetPosition();
 }

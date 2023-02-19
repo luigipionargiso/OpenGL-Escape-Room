@@ -11,7 +11,7 @@ class World;
 class GameObject
 {
 public:
-	GameObject(Model* model, InputComponent* input, PhysicsComponent* physics);
+	GameObject(Model* model);
 	~GameObject();
 
 	GameObject(GameObject&& other) noexcept = default;

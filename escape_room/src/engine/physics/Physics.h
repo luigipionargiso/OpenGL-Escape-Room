@@ -20,7 +20,7 @@ enum CollisionShape
 
 enum RigidBodyAttribute
 {
-	RAY_VISIBILITY, COLLISION_VISIBILITY
+	RAY_VISIBILITY, COLLISION_VISIBILITY, IS_KINEMATIC
 };
 
 class Physics

@@ -15,4 +15,9 @@ public:
 	AmbientLight* ambient_light_;
 	PointLight* point_light_;
 	SpotLight* spot_light_;
+
+private:
+	void LoadWalls();
+	void LoadForniture();
+	void LoadMovableObjects();
 };

@@ -57,10 +57,9 @@ int main(void)
     //glEnable(GL_CULL_FACE);
 
     Physics::Initialize();
-    Text::Init(new Texture("res/textures/text/ExportedFont2.bmp", IMAGE), new Shader("res/shaders/text.vert", "res/shaders/text.frag"));
+    Text::Init(new Texture("res/textures/text/characters.png", IMAGE), new Shader("res/shaders/text.vert", "res/shaders/text.frag"));
     
     Game& game = Game::GetInstance();
-    game.Populate();
 
     /* game loop constants */
     const auto MS_PER_FRAME = std::chrono::milliseconds(16);
@@ -105,8 +104,6 @@ int main(void)
         /* draw */
         Renderer::Clear();
         game.Draw();
-
-        Text::Render("Ciao ciao ciao", 0.0f, 0.0f, 32.0f);
 
         /* limit frame rate to 60 FPS */
         auto sleep_time = std::chrono::duration_cast<std::chrono::milliseconds>(

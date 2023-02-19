@@ -3,11 +3,11 @@
 #include "engine/physics/Physics.h"
 #include "PhysicsComponent.h"
 
-class PickablePhysicsComponent : public PhysicsComponent
+class BallPhysicsComponent : public PhysicsComponent
 {
 public:
-	PickablePhysicsComponent(GameObject& object, float mass);
-	~PickablePhysicsComponent();
+	BallPhysicsComponent(GameObject& object, float mass);
+	~BallPhysicsComponent();
 
 	void Update(GameObject& object);
 	void RestartSimulation(GameObject& object) override;

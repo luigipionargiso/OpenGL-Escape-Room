@@ -12,14 +12,14 @@ public:
 			HUDElement(
 				new Texture("res/textures/dialog_box.png", IMAGE),
 				Game::GetInstance().GetShader("hud"),
-				0.98f
+				-0.98f
 			)
 		) {}
 
 	void Draw(Shader& shader)
 	{
 		dialog_box_.Render();
-		Text::Render(text_.c_str(), -0.5f, -0.5f, 32.0f);
+		Text::Render(text_.c_str(), -0.8f, -0.75f, 32.0f);
 	}
 
 private:

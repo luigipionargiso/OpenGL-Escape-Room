@@ -1,37 +1,35 @@
-#include "TorchPhase.h"
+#include "PillowPhase.h"
 #include "engine/input/Mouse.h"
 #include "engine/input/Keyboard.h"
 #include "engine/physics/Physics.h"
 #include "game/Game.h"
 #include "game/game_object/GameObject.h"
 #include "game/game_object/PickableInputComponent.h"
-#include "PillowPhase.h"
+#include "BallPhase.h"
 #include "game/GameUtils.h"
 
-TorchPhase::TorchPhase()
+bool open_drawer = false;
+
+PillowPhase::PillowPhase()
 {
-	Game& game = Game::GetInstance();
-
-    /* lower ambient light */
-    game.GetWorld().ambient_light_->color_ = glm::vec3(0.1f);
-
-	/* delete the torch */
-	delete(game.GetWorld().objects_["torcia"]);
-	game.GetWorld().objects_.erase("torcia");
+    Game& game = Game::GetInstance();
+    game.SetPlayerStatus(HOLD);
+    game.GetWorld().objects_["cuscino"]->SetInputComponent(new PickableInputComponent());
+    game.SetPickedObject(game.GetWorld().objects_["cuscino"]);
 
     /* replace the wall */
-    game.GetWorld().objects_["parete_frontale"]->SetVisibility(false);
-    game.GetWorld().objects_["parete_frontale_VAR"]->SetVisibility(true);
+    game.GetWorld().objects_["parete_frontale"]->SetVisibility(true);
+    game.GetWorld().objects_["parete_frontale_VAR"]->SetVisibility(false);
 
-    current_dialog_ = new Dialog("You have obtained a torch!");
+    current_dialog_ = new Dialog("You have obtained the drawer key!");
 }
 
-TorchPhase::~TorchPhase()
+PillowPhase::~PillowPhase()
 {
     delete(current_dialog_);
 }
 
-void TorchPhase::HandleInput()
+void PillowPhase::HandleInput()
 {
     static Game& game = Game::GetInstance();
     static World& world = game.GetWorld();
@@ -62,14 +60,15 @@ void TorchPhase::HandleInput()
             auto result = std::find_if(
                 world.objects_.begin(),
                 world.objects_.end(),
-                [selected](const auto& value) {return value.second == selected; }
+                [selected](const auto& value) { return value.second == selected; }
             );
 
             if (result != world.objects_.end() && CheckDistanceLimit(*result->second, *world.objects_["player"]))
             {
-                if (result->first.compare("cuscino") == 0)
+                if (result->first.compare("cassetto") == 0)
                 {
-                    game.ChangePhase(new PillowPhase());
+                    current_dialog_ = new Dialog("You unlocked the drawer.");
+                    open_drawer = true;
                     return;
                 }
                 else if (result->first.compare("porta") == 0)
@@ -109,8 +108,8 @@ void TorchPhase::HandleInput()
     {
         /* throw object */
         game.SetPlayerStatus(WALKING);
-        game.GetPickedObject()->SetPosition(game.GetActiveCamera().GetPosition() + game.GetActiveCamera().GetDirection());
         game.GetPickedObject()->SetInputComponent(nullptr);
+        game.GetPickedObject()->SetPosition(game.GetActiveCamera().GetPosition() + game.GetActiveCamera().GetDirection());
         game.GetPickedObject()->GetPhysicsComponent()->SetLinearVelocity(
             game.GetActiveCamera().GetDirection() * 3.0f
         );
@@ -119,20 +118,33 @@ void TorchPhase::HandleInput()
     }
 }
 
-void TorchPhase::Update()
+void PillowPhase::Update()
 {
-	Game& game = Game::GetInstance();
+    Game& game = Game::GetInstance();
 
-	game.GetActiveCamera().Update();
+    game.GetActiveCamera().Update();
 
-	for (auto& obj : game.GetWorld().objects_)
-		obj.second->Update();
+    for (auto& obj : game.GetWorld().objects_)
+        obj.second->Update();
 
-	game.GetWorld().spot_light_->position_ = game.GetActiveCamera().GetPosition();
-	game.GetWorld().spot_light_->direction_ = glm::normalize(game.GetActiveCamera().GetDirection());
+    game.GetWorld().spot_light_->position_ = game.GetActiveCamera().GetPosition();
+    game.GetWorld().spot_light_->direction_ = glm::normalize(game.GetActiveCamera().GetDirection());
+
+    static int i = 0;
+    if (open_drawer && i < 30)
+    {
+        glm::vec3 pos = game.GetWorld().objects_["cassetto"]->GetPosition();
+        game.GetWorld().objects_["cassetto"]->SetPosition(pos + glm::vec3(0.01f, 0.0f, 0.0f));
+        i++;
+    }
+    if (i == 30)
+    {
+        game.ChangePhase(new BallPhase());
+        return;
+    }
 }
 
-void TorchPhase::Draw()
+void PillowPhase::Draw()
 {
     Game& game = Game::GetInstance();
     Shader& shader = *game.GetShader("basic");

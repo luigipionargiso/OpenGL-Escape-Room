@@ -8,6 +8,7 @@ class PlayerInputComponent : public InputComponent
 {
 	void Update(GameObject& player)
 	{
-		player.SetPosition(Game::GetInstance().GetActiveCamera().GetPosition());
+		glm::vec3 cam_pos = Game::GetInstance().GetActiveCamera().GetPosition();
+		player.SetPosition(cam_pos);
 	}
 };

@@ -38,9 +38,12 @@ HUDElement::HUDElement(Texture* image, Shader* shader, float z_depth)
 
 void HUDElement::Render()
 {
-    shader_->Bind();
-    image_->Bind();
-    shader_->setUniform1i("u_image", 0);
-    shader_->setUniform1f("u_depth", z_depth_);
-    Renderer::Draw(*vao_, *shader_);
+    if (is_visible_)
+    {
+        shader_->Bind();
+        image_->Bind();
+        shader_->setUniform1i("u_image", 0);
+        shader_->setUniform1f("u_depth", z_depth_);
+        Renderer::Draw(*vao_, *shader_);
+    }
 }

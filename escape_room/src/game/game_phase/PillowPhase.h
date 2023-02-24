@@ -9,6 +9,7 @@ public:
     PillowPhase();
     ~PillowPhase();
     void HandleInput();
+    void HandlePadInput();
     void Update();
     void Draw();
 

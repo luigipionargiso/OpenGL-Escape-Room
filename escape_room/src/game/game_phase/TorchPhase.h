@@ -9,6 +9,7 @@ public:
     TorchPhase();
     ~TorchPhase();
     void HandleInput();
+    void HandlePadInput();
     void Update();
     void Draw();
 

@@ -9,6 +9,7 @@ public:
     BallPhase();
     ~BallPhase();
     void HandleInput();
+    void HandlePadInput();
     void Update();
     void Draw();
 

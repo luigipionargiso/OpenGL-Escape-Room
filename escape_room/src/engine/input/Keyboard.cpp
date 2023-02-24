@@ -1,5 +1,4 @@
 #include "Keyboard.h"
-#include "../window/Window.h"
 #include "GLFW/glfw3.h"
 
 /* initialize the hash map */
@@ -28,4 +27,5 @@ void Keyboard::PollEvents(Window& w)
     keys_[KEY_SPACE] = static_cast<KeyStatus>(glfwGetKey(w.GetGLFWPointer(), GLFW_KEY_SPACE));
     keys_[KEY_F] = static_cast<KeyStatus>(glfwGetKey(w.GetGLFWPointer(), GLFW_KEY_F));
     keys_[KEY_ESC] = static_cast<KeyStatus>(glfwGetKey(w.GetGLFWPointer(), GLFW_KEY_ESCAPE));
+    keys_[KEY_ENTER] = static_cast<KeyStatus>(glfwGetKey(w.GetGLFWPointer(), GLFW_KEY_ENTER));
 }

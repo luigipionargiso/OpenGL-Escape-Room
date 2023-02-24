@@ -25,7 +25,7 @@ public:
 	void SetPosition(const glm::vec3 position);
 	void SetDirection(const glm::vec3 direction);
 	void SetUpVector(const glm::vec3 up);
-	void SetInputComponent(CameraInputComponent* input) { input_ = input; }
+	void SetInputComponent(CameraInputComponent* input);
 
 	inline glm::vec3 GetPosition() const { return position_; }
 	inline glm::vec3 GetDirection() const { return direction_; }

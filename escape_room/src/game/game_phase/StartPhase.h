@@ -6,8 +6,10 @@
 class StartPhase : public GamePhase
 {
 public:
+    StartPhase();
     ~StartPhase();
     void HandleInput();
+    void HandlePadInput();
     void Update();
     void Draw();
 

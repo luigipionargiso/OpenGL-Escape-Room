@@ -41,6 +41,12 @@ void Camera::SetUpVector(const glm::vec3 up)
     up_ = up;
 }
 
+void Camera::SetInputComponent(CameraInputComponent* input)
+{
+    delete input_;
+    input_ = input;
+}
+
 glm::mat4 Camera::GetViewMatrix()
 {
     view_matrix_ = glm::lookAt(position_, direction_ + position_, up_);

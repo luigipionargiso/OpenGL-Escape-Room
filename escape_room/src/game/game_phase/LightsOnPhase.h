@@ -9,6 +9,7 @@ public:
     LightsOnPhase();
     ~LightsOnPhase();
     void HandleInput();
+    void HandlePadInput();
     void Update();
     void Draw();
 

@@ -8,6 +8,7 @@
 #include "engine/window/Window.h"
 #include "engine/input/Keyboard.h"
 #include "engine/input/Mouse.h"
+#include "engine/input/Gamepad.h"
 #include "engine/physics/Physics.h"
 #include "engine/text_rendering/Text.h"
 #include "engine/Shader.h"
@@ -78,11 +79,12 @@ int main(void)
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(current - previous);
         previous = current;
         lag += (long)elapsed.count();
-
+        
         /* handle input */
         Window::PollEvents();
         Keyboard::PollEvents(window);
         Mouse::PollEvents(window);
+        Gamepad::PollEvents(window);
 
         /* toggle fullscreen */
         if (Keyboard::GetKey(KEY_F) == RELEASE) f_was_released = true;

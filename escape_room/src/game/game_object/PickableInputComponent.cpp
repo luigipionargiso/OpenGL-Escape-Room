@@ -7,6 +7,7 @@
 #include <iostream>
 #include "engine/input/Mouse.h"
 #include "engine/input/Keyboard.h"
+#include "engine/input/Gamepad.h"
 #include "engine/window/Window.h"
 
 void PickableInputComponent::Update(GameObject& object)
@@ -27,17 +28,25 @@ void PickableInputComponent::Update(GameObject& object)
     {
         object.SetPosition(glm::vec3(inv_view_matrix * glm::vec4(0.0f, 0.0f, -1.0f, 1.0f)));
 
-        if (Keyboard::GetKey(KEY_W) == PRESS) {
-            examine_rotation.x += 0.03f;
+        if (Game::GetInstance().GetDevice() == KEYBOARD_AND_MOUSE)
+        {
+            if (Keyboard::GetKey(KEY_W) == PRESS) {
+                examine_rotation.x += 0.03f;
+            }
+            if (Keyboard::GetKey(KEY_S) == PRESS) {
+                examine_rotation.x -= 0.03f;
+            }
+            if (Keyboard::GetKey(KEY_A) == PRESS) {
+                examine_rotation.y -= 0.03f;
+            }
+            if (Keyboard::GetKey(KEY_D) == PRESS) {
+                examine_rotation.y += 0.03f;
+            }
         }
-        if (Keyboard::GetKey(KEY_S) == PRESS) {
-            examine_rotation.x -= 0.03f;
-        }
-        if (Keyboard::GetKey(KEY_A) == PRESS) {
-            examine_rotation.y -= 0.03f;
-        }
-        if (Keyboard::GetKey(KEY_D) == PRESS) {
-            examine_rotation.y += 0.03f;
+        else
+        {
+            examine_rotation.x += Gamepad::GetAxisStatus(AXIS_LEFT).x * 0.05f;
+            examine_rotation.y += Gamepad::GetAxisStatus(AXIS_LEFT).y * 0.05f;
         }
 
         object.SetRotationEulerYXZ(examine_rotation);

@@ -4,6 +4,7 @@
 #include "game/game_object/PlayerPhysicsComponent.h"
 #include "game/game_object/PickablePhysicsComponent.h"
 #include "game/game_object/StaticPhysicsComponent.h"
+#include <thread>
 
 void World::Populate()
 {
@@ -22,8 +23,8 @@ void World::Populate()
     ambient_light_ = new AmbientLight(glm::vec3(0.1f));
     point_light_ = new PointLight(glm::vec3(0.0f, 1.95f, 0.42f), glm::vec3(0.0), glm::vec3(0.0));
     spot_light_ = new SpotLight(
-        glm::vec3(-1.038f, 0.48f, -1.308f),
-        glm::normalize(glm::vec3(1.0f, 0.0f, -0.7f)),
+        glm::vec3(-0.6f, 0.48f, -1.308f),
+        glm::normalize(glm::vec3(1.0f, 0.0f, -1.0f)),
         cos(glm::radians(15.0f)),
         glm::vec3(1.0),
         glm::vec3(1.0)
@@ -103,6 +104,10 @@ void World::LoadForniture()
     ptr->SetPosition(glm::vec3(1.58565f, 1.01f, 2.851f));
     ptr->SetDimensions(glm::vec3(0.8f, 2.02f, 0.28f));
 
+    ptr = new GameObject(new Model("res/models/libreria/libri.fbx"));
+    objects_["libri"] = ptr;
+    ptr->SetPosition(glm::vec3(1.57904f, 1.36448f, 2.85457f));
+
     ptr = new GameObject(new Model("res/models/scrivania/scrivania.fbx"));
     objects_["scrivania"] = ptr;
     ptr->SetPosition(glm::vec3(1.679f, 0.75f, 1.85679f));
@@ -121,6 +126,12 @@ void World::LoadForniture()
     ptr->SetDimensions(glm::vec3(0.493513f, 0.22f, 0.293169f));
     ptr->SetPhysicsComponent(new StaticPhysicsComponent(*ptr, true));
 
+    ptr = new GameObject(new Model("res/models/termosifone/termosifone.fbx"));
+    objects_["termosifone"] = ptr;
+    ptr->SetPosition(glm::vec3(2.05512f, 0.397763f, -0.000448f));
+    ptr->SetDimensions(glm::vec3(0.189286f, 0.537711f, 1.82939f));
+    ptr->SetPhysicsComponent(new StaticPhysicsComponent(*ptr, false));
+
     ptr = new GameObject(new Model("res/models/comodino/comodino.fbx"));
     objects_["comodino"] = ptr;
     ptr->SetPosition(glm::vec3(-1.78922f, 0.498333f, -0.639844f));
@@ -136,6 +147,38 @@ void World::LoadForniture()
     ptr->SetPosition(glm::vec3(-0.988657f, 0.29f, -1.53501f));
     ptr->SetDimensions(glm::vec3(1.97185f, 0.25f, 1.2496f));
     ptr->SetPhysicsComponent(new StaticPhysicsComponent(*ptr, false));
+
+    ptr = new GameObject(new Model("res/models/mobile_tv/mobile_tv.fbx"));
+    objects_["mobile_tv"] = ptr;
+    ptr->SetPosition(glm::vec3(0.543299f, 0.225f, 2.8609f));
+    ptr->SetDimensions(glm::vec3(0.9f, 0.45f, 0.26f));
+    ptr->SetPhysicsComponent(new StaticPhysicsComponent(*ptr, false));
+
+    ptr = new GameObject(new Model("res/models/mobile_tv/tv.fbx"));
+    objects_["tv"] = ptr;
+    ptr->SetPosition(glm::vec3(0.539303f, 0.684547f, 2.89454f));
+    ptr->SetDimensions(glm::vec3(0.741376f, 0.469219f, 0.156261f));
+    ptr->SetPhysicsComponent(new StaticPhysicsComponent(*ptr, false));
+
+    ptr = new GameObject(new Model("res/models/posters/mad_max.fbx"));
+    objects_["mad_max"] = ptr;
+    ptr->SetPosition(glm::vec3(1.99587f, 1.76095f, 1.49986f));
+
+    ptr = new GameObject(new Model("res/models/posters/liz.fbx"));
+    objects_["liz"] = ptr;
+    ptr->SetPosition(glm::vec3(1.99039f, 1.14237f, 1.73426f));
+
+    ptr = new GameObject(new Model("res/models/posters/starlight.fbx"));
+    objects_["starlight"] = ptr;
+    ptr->SetPosition(glm::vec3(1.98362f, 1.45161f, 2.32329f));
+
+    ptr = new GameObject(new Model("res/models/posters/porco_rosso.fbx"));
+    objects_["porco_rosso"] = ptr;
+    ptr->SetPosition(glm::vec3(0.546222f, 1.64897f, 2.99523f));
+
+    ptr = new GameObject(new Model("res/models/posters/wonder.fbx"));
+    objects_["wonder"] = ptr;
+    ptr->SetPosition(glm::vec3(-1.16344f, 1.45857f, -2.195f));
 
     ptr = new GameObject(new Model("res/models/canestro/canestro.fbx"));
     objects_["canestro"] = ptr;
@@ -179,7 +222,8 @@ void World::LoadMovableObjects()
 
     ptr = new GameObject(new Model("res/models/torcia/torcia.fbx"));
     objects_["torcia"] = ptr;
-    ptr->SetPosition(glm::vec3(-1.038f, 0.48f, -1.308f));
+    ptr->SetPosition(glm::vec3(-0.6f, 0.48f, -1.308f));
+    ptr->SetRotationEulerYXZ(glm::vec3(0.0f, 0.0f, glm::radians(45.0f)));
     ptr->SetDimensions(glm::vec3(0.185473f, 0.06026f, 0.06026f));
     ptr->SetPhysicsComponent(new StaticPhysicsComponent(*ptr, true));
 

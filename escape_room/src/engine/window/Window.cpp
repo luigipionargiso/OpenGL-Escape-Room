@@ -32,6 +32,7 @@ void Window::MakeContextCurrent() const
     glfwMakeContextCurrent(glfw_pointer_);
     glfwSwapInterval(1);
     active_ = this;
+    glfwSetInputMode(glfw_pointer_, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 }
 
 
@@ -56,6 +57,7 @@ void Window::ToggleFullscreen()
     {
         glfwSetWindowMonitor(glfw_pointer_, NULL, 100, 100, 800, 450, 0);
         is_fullscreen_ = false;
+        glfwSetInputMode(glfw_pointer_, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
     }
     else
     {
@@ -70,6 +72,7 @@ void Window::ToggleFullscreen()
             mode->refreshRate
         );
         is_fullscreen_ = true;
+        glfwSetInputMode(glfw_pointer_, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
 }
 

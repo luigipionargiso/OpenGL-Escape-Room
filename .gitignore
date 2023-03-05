@@ -18,7 +18,6 @@ models/
 *.txt
 
 #ignore images
-*.jpg
 *.png
 
 #ignore 3d model files

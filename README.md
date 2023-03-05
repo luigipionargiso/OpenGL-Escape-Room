@@ -2,6 +2,9 @@
 
 **A videogame developed in C++ using the OpenGL API for the Computer Graphics course at Politecnico of Torino.**
 
+![](./screenshots/001.jpg)
+![](./screenshots/002.jpg)
+
 The game has been developed using [Microsoft Visual Studio](https://visualstudio.microsoft.com/), [Blender](https://www.blender.org/) and [Adobe Photoshop 2022](https://www.adobe.com/it/products/photoshop.html).
 
 ## Libraries
